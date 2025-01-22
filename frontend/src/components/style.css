@@ -1,0 +1,4 @@
+/* styles.css */
+.custom-will-change {
+    @apply will-change-transform;
+}
