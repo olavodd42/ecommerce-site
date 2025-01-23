@@ -9,6 +9,7 @@ import Checkout from "./pages/Checkout.tsx";
 import Login from './pages/Login.tsx';
 import Product from "./pages/Product.tsx";
 import Register from './pages/Register.tsx';
+import SearchPage from './pages/searchPage.tsx';
 
 const App = () => {
   return (
@@ -16,7 +17,7 @@ const App = () => {
     <Router>
       <div className="flex flex-col min-h-screen">
         <Header />
-        <main className="flex-grow">
+        <main className="flex-grow pt-20">
           <Routes>
             <Route path="/" element={<Home />} />
             <Route path="/home" element={<Home />} />
@@ -25,6 +26,7 @@ const App = () => {
             <Route path="/login" element={<Login />} />
             <Route path="/product/:id" element={<Product />} />
             <Route path="/register" element={<Register />} />
+            <Route path="/search" element={<SearchPage />} />
           </Routes>
         </main>
         <Footer />
