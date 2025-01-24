@@ -84,7 +84,9 @@ const Header = () => {
 
         {/* Ações e Menu Mobile */}
         <div className="flex items-center space-x-6">
-          <SearchIcon className="w-5 h-5 cursor-pointer hover:text-gray-300" />
+          <Link to="/search">
+            <SearchIcon className="w-5 h-5 cursor-pointer hover:text-gray-300" />
+          </Link>
           <Link to="/cart">
             <ShoppingCartIcon className="w-5 h-5 cursor-pointer hover:text-gray-300" />
           </Link>

@@ -10,6 +10,7 @@ import Login from './pages/Login.tsx';
 import Product from "./pages/Product.tsx";
 import Register from './pages/Register.tsx';
 import SearchPage from './pages/searchPage.tsx';
+import UserPage from './pages/userProfile.tsx';
 
 const App = () => {
   return (
@@ -27,6 +28,7 @@ const App = () => {
             <Route path="/product/:id" element={<Product />} />
             <Route path="/register" element={<Register />} />
             <Route path="/search" element={<SearchPage />} />
+            <Route path="/user" element={<UserPage />} />
           </Routes>
         </main>
         <Footer />
