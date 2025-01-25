@@ -1,5 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import Orders from '../components/Orders';
+import Wishlist from '../components/Wishlist';
+import Account from '../components/Account';
+import Settings from '../components/Settings';
+import Cards from '../components/Cards';
+import Sales from '../components/Sales';
 
 const UserPage = () => {
   const [activeTab, setActiveTab] = useState('orders');
@@ -14,16 +20,19 @@ const UserPage = () => {
 
   const renderContent = () => {
     switch (activeTab) {
+  
       case 'orders':
-        return <div>Meus Pedidos</div>;
+        return <Orders />;
       case 'wishlist':
-        return <div>Minha Lista de Desejos</div>;
+        return <Wishlist />;
       case 'account':
-        return <div>Minha Conta</div>;
+        return <Account />;
       case 'settings':
-        return <div>Configurações</div>;
+        return <Settings />;
       case 'cards':
-        return <div>Meus Cartões</div>;
+        return <Cards />;
+      case 'sales':
+        return <Sales />;
       default:
         return null;
     }
@@ -84,6 +93,16 @@ const UserPage = () => {
               }`}
             >
               Meus Cartões
+            </button>
+            <button
+              onClick={() => setActiveTab('cards')}
+              className={`w-1/5 py-4 text-center text-sm font-medium ${
+                activeTab === 'sales'
+                  ? 'text-blue-600 border-b-2 border-blue-600'
+                  : 'text-gray-600 hover:text-blue-600'
+              }`}
+            >
+              Vendas
             </button>
           </div>
           <div className="p-6">{renderContent()}</div>
