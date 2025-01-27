@@ -11,6 +11,7 @@ import Product from "./pages/Product.tsx";
 import Register from './pages/Register.tsx';
 import SearchPage from './pages/searchPage.tsx';
 import UserPage from './pages/userProfile.tsx';
+import ProtectedRoute from './components/ProtectedRoute.tsx';
 
 const App = () => {
   return (
@@ -20,6 +21,7 @@ const App = () => {
         <Header />
         <main className="flex-grow pt-20">
           <Routes>
+            
             <Route path="/" element={<Home />} />
             <Route path="/home" element={<Home />} />
             <Route path="/cart" element={<Cart />} />
@@ -28,7 +30,14 @@ const App = () => {
             <Route path="/product/:id" element={<Product />} />
             <Route path="/register" element={<Register />} />
             <Route path="/search" element={<SearchPage />} />
-            <Route path="/user" element={<UserPage />} />
+            <Route
+              path="/user"
+              element={
+                <ProtectedRoute>
+                  <UserPage />
+                </ProtectedRoute>
+              }
+            />
           </Routes>
         </main>
         <Footer />

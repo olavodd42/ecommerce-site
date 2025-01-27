@@ -1,5 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import Orders from '../components/Orders.tsx';
+import Config from '../components/Config.tsx';
+import Account from '../components/Account.tsx';
+import Sales from '../components/Sales.tsx';
+import Wishlist from '../components/Wishlist.tsx'; // Corrigido para 'Wishlist'
+import Cards from '../components/Cards.tsx';
 
 const UserPage = () => {
   const [activeTab, setActiveTab] = useState('orders');
@@ -15,15 +21,17 @@ const UserPage = () => {
   const renderContent = () => {
     switch (activeTab) {
       case 'orders':
-        return <div>Meus Pedidos</div>;
+        return <Orders />;
       case 'wishlist':
-        return <div>Minha Lista de Desejos</div>;
+        return <Wishlist />;
       case 'account':
-        return <div>Minha Conta</div>;
+        return <Account />;
       case 'settings':
-        return <div>Configurações</div>;
+        return <Config />;
       case 'cards':
-        return <div>Meus Cartões</div>;
+        return <Cards />;
+      case 'sales':
+        return <Sales />;
       default:
         return null;
     }

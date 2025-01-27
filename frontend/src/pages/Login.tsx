@@ -21,22 +21,22 @@ const Login = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError(null);
-
+  
     try {
       setLoading(true);
       const response = await axios.post("http://localhost:4000/api/users/login", {
         email,
         password,
       });
-
+  
       const { token } = response.data;
-
+  
       // Salva o token no localStorage
       localStorage.setItem("authToken", token);
-
+  
       // Redireciona para a home
       navigate("/");
-
+  
       // Limpa os campos
       setEmail("");
       setPassword("");

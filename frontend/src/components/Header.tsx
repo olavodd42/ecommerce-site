@@ -1,13 +1,20 @@
 import React, { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { MenuIcon, XIcon, SearchIcon, ShoppingCartIcon, UserIcon } from "@heroicons/react/outline";
 import Image from './img.png';
+import { useAuth } from '../context/authProvider.tsx'; // Importe o hook useAuth
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [showCategories, setShowCategories] = useState(false);
+  const { isLoggedIn, logout } = useAuth(); // Use o hook useAuth para obter o estado de autenticação
+  const navigate = useNavigate();
 
   const toggleCategories = () => setShowCategories(!showCategories);
+  const handleLogout = () => {
+    logout(); // Chama a função de logout
+    navigate("/login"); // Redireciona para a página de login
+  };
 
   return (
     <nav className="bg-gradient-to-r from-blue-500 via-blue-600 to-blue-700 text-white shadow-md fixed w-full z-50 h-16">
@@ -90,9 +97,22 @@ const Header = () => {
           <Link to="/cart">
             <ShoppingCartIcon className="w-5 h-5 cursor-pointer hover:text-gray-300" />
           </Link>
-          <Link to="/login">
+          {isLoggedIn ? (
+            <>
+              <Link to="/user" className="hover:text-gray-300">Perfil</Link>
+              <button
+                onClick={handleLogout}
+                className="text-sm font-medium hover:text-gray-300"
+              >
+                Sair
+              </button>
+            </>
+          ) : (
+            <Link to="/login" className="hover:text-gray-300">Entrar</Link>
+          )}
+          {/* <Link to={isLoggedIn ? "/user" : "/login"}>
             <UserIcon className="w-5 h-5 cursor-pointer hover:text-gray-300" />
-          </Link>
+          </Link> */}
 
           {/* Botão do Menu Mobile */}
           <button
@@ -102,6 +122,7 @@ const Header = () => {
             {isMenuOpen ? <XIcon className="w-6 h-6" /> : <MenuIcon className="w-6 h-6" />}
           </button>
         </div>
+        
       </div>
 
       {/* Menu Mobile */}
@@ -111,7 +132,7 @@ const Header = () => {
             <li><Link to="/" className="text-gray-800 hover:text-blue-600">Home</Link></li>
             <li><Link to="/cart" className="text-gray-800 hover:text-blue-600">Carrinho</Link></li>
             <li><Link to="/bestsellers" className="text-gray-800 hover:text-blue-600">Mais Vendidos</Link></li>
-            {/* <li><Link to="/login" className="text-gray-800 hover:text-blue-600">Login</Link></li> */}
+            <li><Link to="/login" className="text-gray-800 hover:text-blue-600">Login</Link></li>
           </ul>
         </div>
       )}
