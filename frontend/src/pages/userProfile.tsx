@@ -20,6 +20,7 @@ const UserPage = () => {
 
   const renderContent = () => {
     switch (activeTab) {
+  
       case 'orders':
         return <Orders />;
       case 'wishlist':
@@ -27,7 +28,11 @@ const UserPage = () => {
       case 'account':
         return <Account />;
       case 'settings':
+<<<<<<< HEAD
         return <Config />;
+=======
+        return <Settings />;
+>>>>>>> 60964bf2f5cb20a35ebb45b09d51f5328a70375b
       case 'cards':
         return <Cards />;
       case 'sales':
@@ -92,6 +97,16 @@ const UserPage = () => {
               }`}
             >
               Meus Cartões
+            </button>
+            <button
+              onClick={() => setActiveTab('cards')}
+              className={`w-1/5 py-4 text-center text-sm font-medium ${
+                activeTab === 'sales'
+                  ? 'text-blue-600 border-b-2 border-blue-600'
+                  : 'text-gray-600 hover:text-blue-600'
+              }`}
+            >
+              Vendas
             </button>
           </div>
           <div className="p-6">{renderContent()}</div>
