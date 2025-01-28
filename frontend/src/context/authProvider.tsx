@@ -11,20 +11,68 @@ const AuthContext = createContext<AuthContextProps | undefined>(undefined);
 
 export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [logoutTimer, setLogoutTimer] = useState<number | null>(null);
 
+  const INACTIVITY_TIMEOUT = 30 * 60 * 1000; // 30 minutos
+
+  // Verifica o token no início
   useEffect(() => {
     const token = localStorage.getItem("authToken");
-    if (token) {
-      setIsLoggedIn(true);
+    const expiration = localStorage.getItem("authTokenExpiration");
+
+    if (token && expiration) {
+      const expirationTime = new Date(expiration).getTime();
+      const currentTime = Date.now();
+
+      if (currentTime < expirationTime) {
+        setIsLoggedIn(true);
+        startLogoutTimer(expirationTime - currentTime); // Reinicia o temporizador baseado no tempo restante
+      } else {
+        logout();
+      }
     }
-  }, []);
+
+    // Monitora eventos de atividade para resetar o temporizador
+    const resetTimer = () => {
+      if (logoutTimer) clearTimeout(logoutTimer);
+      startLogoutTimer(INACTIVITY_TIMEOUT);
+    };
+
+    window.addEventListener("mousemove", resetTimer);
+    window.addEventListener("keydown", resetTimer);
+
+    return () => {
+      window.removeEventListener("mousemove", resetTimer);
+      window.removeEventListener("keydown", resetTimer);
+      if (logoutTimer) clearTimeout(logoutTimer);
+    };
+  }, [logoutTimer]);
+
+  const startLogoutTimer = (timeout: number) => {
+    if (logoutTimer) clearTimeout(logoutTimer);
+
+    const timer = window.setTimeout(() => {
+      logout();
+    }, timeout);
+
+    setLogoutTimer(timer);
+  };
 
   const login = async (email: string, password: string) => {
     try {
       const response = await axios.post("http://localhost:4000/api/users/login", { email, password });
-      const { token } = response.data;
+      const { token, expiresIn } = response.data;
+
+      const expirationTime = new Date(Date.now() + expiresIn * 1000).toISOString();
+
+      // Armazena o token e a data de expiração no localStorage
       localStorage.setItem("authToken", token);
+      localStorage.setItem("authTokenExpiration", expirationTime);
+
       setIsLoggedIn(true);
+
+      // Inicia o temporizador de logout
+      startLogoutTimer(expiresIn * 1000);
     } catch (error) {
       console.error("Erro ao fazer login:", error);
       throw new Error(error.response?.data?.error || "Erro ao fazer login. Tente novamente.");
@@ -33,7 +81,9 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
   const logout = () => {
     localStorage.removeItem("authToken");
+    localStorage.removeItem("authTokenExpiration");
     setIsLoggedIn(false);
+    if (logoutTimer) clearTimeout(logoutTimer);
   };
 
   return (

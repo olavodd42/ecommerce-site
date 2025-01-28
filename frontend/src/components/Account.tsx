@@ -66,11 +66,15 @@ const Account = () => {
 
         try {
             setLoading(true);
-            await axios.put("http://localhost:4000/api/users", {
+            await axios.put("http://localhost:4000/api/users/me", {
                 email,
                 name,
                 phone,
                 hashedPassword,
+            }, {
+                headers: {
+                    Authorization: `Bearer ${localStorage.getItem('authToken')}`,
+                },
             });
 
             setSuccess(true);
