@@ -5,4 +5,4 @@ protectedRouter.route('/users').get(getAllUsers)
 // protectedRouter.route('/users/:id').get(getUser).put(updateUser).delete(deleteUser)
 protectedRouter.route('/me').get(getUser).put(updateUser).delete(deleteUser);
 
-module.exports = protectedRouter
+export default protectedRouter

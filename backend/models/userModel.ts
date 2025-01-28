@@ -1,27 +1,27 @@
 import { Sequelize, DataTypes } from 'sequelize';
-const db = require('../config/db.ts')
+const db = require('../config/db.ts');
 
 const User = db.define('user', {
   id: {
     type: DataTypes.UUID,
     defaultValue: DataTypes.UUIDV4,
     allowNull: false,
-    primaryKey: true
+    primaryKey: true,
   },
   email: {
     type: DataTypes.STRING,
     unique: true,
-    allowNull: false
+    allowNull: false,
   },
   name: DataTypes.STRING,
   password: {
     type: DataTypes.STRING,
-    allowNull: false
+    allowNull: false,
   },
   phone: {
     type: DataTypes.STRING,
-    allowNull: false
-  }
-})
+    allowNull: false,
+  },
+});
 
-module.exports = User
+export default User; // Use exportação padrão

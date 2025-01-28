@@ -1,7 +1,8 @@
 const productRouter = require('express').Router();
 const { createProduct, updateProduct, deleteProduct } = require('../controllers/productControllers');
+const upload = require('../config/multer');
 
-productRouter.route('/').post(createProduct);
+productRouter.post('/', upload.single('image'), createProduct);
 productRouter.route('/:id').put(updateProduct).delete(deleteProduct);
 
-module.exports = productRouter;
+export default productRouter;

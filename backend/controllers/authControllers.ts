@@ -1,10 +1,12 @@
-const User = require('../models/userModel.ts')
-const bcrypt = require('bcrypt')
-const jwt = require('jsonwebtoken')
-const Joi = require('joi'); // Para validação de entrada
+import bcrypt from 'bcrypt';
+import jwt from 'jsonwebtoken';
+import Joi from 'joi';
+import { Response } from 'express';
+import User from '../models/userModel';
+import { IGetUserAuthInfoRequest } from './type';
 
-exports.register = async (req, res) => {
-  // Validação com Joi
+// Registro de novo usuário
+exports.register = async (req: IGetUserAuthInfoRequest, res: Response) => {
   const schema = Joi.object({
     email: Joi.string().email().required().messages({
       "string.email": "Por favor, insira um e-mail válido.",
@@ -22,14 +24,12 @@ exports.register = async (req, res) => {
       .pattern(/^\(\d{2}\) \d{5}-\d{4}$/)
       .required()
       .messages({
-        "string.pattern.base":
-          "O telefone deve estar no formato (55) 55555-5555.",
+        "string.pattern.base": "O telefone deve estar no formato (55) 55555-5555.",
         "any.required": "O campo telefone é obrigatório.",
       }),
   });
 
   const { error } = schema.validate(req.body);
-
   if (error) {
     return res.status(400).json({ error: error.details[0].message });
   }
@@ -37,22 +37,13 @@ exports.register = async (req, res) => {
   try {
     const { email, name, password, phone } = req.body;
 
-    // Verificar se o e-mail já está cadastrado
     const existingUser = await User.findOne({ where: { email } });
     if (existingUser) {
       return res.status(400).json({ error: "E-mail já cadastrado." });
     }
 
-    // Criptografar a senha
     const hashedPassword = bcrypt.hashSync(password, 10);
-
-    // Criar novo usuário
-    const user = await User.create({
-      email,
-      name,
-      password: hashedPassword,
-      phone,
-    });
+    const user = await User.create({ email, name, password: hashedPassword, phone });
 
     res.status(201).json({
       message: "Usuário registrado com sucesso!",
@@ -64,110 +55,118 @@ exports.register = async (req, res) => {
       },
     });
   } catch (err) {
-    res.status(500).json({ error: "Erro ao registrar usuário. Tente novamente." });
+    res.status(500).json({ error: (err as Error).message });
   }
 };
 
-exports.login = async (req, res) => {
+// Login
+exports.login = async (req: IGetUserAuthInfoRequest, res: Response) => {
   const { email, password } = req.body;
 
-  // Validação dos dados de entrada
   if (!email || !password) {
     return res.status(400).json({ error: "E-mail e senha são obrigatórios." });
   }
 
-  // Encontrar o usuário pelo e-mail
-  const user = await User.findOne({ where: { email } });
-
-  if (!user) {
-    return res.status(404).json({ error: "Usuário não encontrado." });
-  }
-
-  // Verificar a senha
-  const validPassword = bcrypt.compareSync(password, user.password);
-  if (!validPassword) {
-    return res.status(401).json({ error: "Senha inválida." });
-  }
-
-  // Gerar token JWT com expiração de 1 hora
-  const expiresIn = 3600; // 1 hora
-  const token = jwt.sign(
-    { id: user.id, email: user.email },
-    process.env.JWT_SECRET || "defaultSecret", // Configuração de fallback
-    { expiresIn }
-  );
-
-  res.status(200).json({
-    message: "Login realizado com sucesso.",
-    token,
-    expiresIn, // Adicione isso para garantir que o front-end receba a expiração
-    user: {
-      id: user.id,
-      email: user.email,
-      name: user.name,
-      phone: user.phone
+  try {
+    const user = await User.findOne({ where: { email } });
+    if (!user) {
+      return res.status(404).json({ error: "Usuário não encontrado." });
     }
-  });
-  
+
+    const validPassword = bcrypt.compareSync(password, user.password);
+    if (!validPassword) {
+      return res.status(401).json({ error: "Senha inválida." });
+    }
+
+    const expiresIn = 3600;
+    const token = jwt.sign(
+      { id: user.id, email: user.email },
+      process.env.JWT_SECRET || "defaultSecret",
+      { expiresIn }
+    );
+
+    res.status(200).json({
+      message: "Login realizado com sucesso.",
+      token,
+      expiresIn,
+      user: {
+        id: user.id,
+        email: user.email,
+        name: user.name,
+        phone: user.phone,
+      },
+    });
+  } catch (err) {
+    res.status(500).json({ error: (err as Error).message });
+  }
 };
 
-exports.getUser = async (req, res) => {
+// Obter usuário atual
+exports.getUser = async (req: IGetUserAuthInfoRequest, res: Response) => {
   try {
-    const user = await User.findByPk(req.user.id);
+    const user = await User.findByPk(req.user?.id);
     if (!user) {
       return res.status(404).json({ error: "Usuário não encontrado." });
     }
     res.status(200).json(user);
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    res.status(500).json({ error: (error as Error).message });
   }
-}
+};
 
-exports.getAllUsers = async (req, res) =>{
+// Obter todos os usuários
+exports.getAllUsers = async (req: IGetUserAuthInfoRequest, res: Response) => {
   try {
-    const users = await User.findAll()
-    res.status(200).json(users)
+    const users = await User.findAll();
+    res.status(200).json(users);
   } catch (error) {
-    res.status(500).json({ error: error.message })
+    res.status(500).json({ error: (error as Error).message });
   }
-}
+};
 
-exports.updateUser = async (req, res) => {
+// Atualizar usuário
+exports.updateUser = async (req: IGetUserAuthInfoRequest, res: Response) => {
   try {
-    const { email, name, password, phone } = req.body;
-
-    // Verifica se o usuário existe
-    const user = await User.findByPk(req.user.id);
+    const { email, name, phone, currentPassword, newPassword } = req.body;
+    const user = await User.findByPk(req.user?.id);
     if (!user) {
-      return res.status(404).json({ error: "Usuário não encontrado" });
+      return res.status(404).json({ error: "Usuário não encontrado." });
     }
 
-    // Atualiza campos fornecidos
+    if (newPassword) {
+      if (!currentPassword) {
+        return res.status(400).json({ error: "Senha atual é obrigatória para alterar a senha." });
+      }
+
+      const isPasswordValid = await bcrypt.compare(currentPassword, user.password);
+      if (!isPasswordValid) {
+        return res.status(401).json({ error: "Senha atual incorreta." });
+      }
+
+      user.password = await bcrypt.hash(newPassword, 10);
+    }
+
     if (email) user.email = email;
     if (name) user.name = name;
     if (phone) user.phone = phone;
 
-    // Apenas rehash se uma nova senha for fornecida
-    if (password) {
-      user.password = bcrypt.hashSync(password, 10);
-    }
-
-    // Salva alterações
     await user.save();
-    res.status(200).json(user);
+    res.status(200).json({ message: "Usuário atualizado com sucesso." });
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: error.message });
+    res.status(500).json({ error: (error as Error).message });
   }
 };
 
-
-exports.deleteUser = async (req, res) => {
+// Deletar usuário
+exports.deleteUser = async (req: IGetUserAuthInfoRequest, res: Response) => {
   try {
-    const user = await User.findByPk(req.user.id)
-    await user.destroy()
-    res.status(200).json({ message: 'User deleted' })
+    const user = await User.findByPk(req.user?.id);
+    if (!user) {
+      return res.status(404).json({ error: "Usuário não encontrado." });
+    }
+    await user.destroy();
+    res.status(200).json({ message: "Usuário deletado com sucesso." });
   } catch (error) {
-    res.status(500).json({ error: error.message })
+    res.status{500}.json({ error: (error as Error).message });
   }
-}
+};

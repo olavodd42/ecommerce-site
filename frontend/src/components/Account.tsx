@@ -50,13 +50,6 @@ const Account = () => {
     };
 
     useEffect(() => {
-        if (!localStorage.getItem('authToken')) {
-            console.error('Token não encontrado no localStorage.');
-            navigate('/login');
-        }
-    }, [navigate]);
-
-    useEffect(() => {
         fetchUser();
     }, []);
 

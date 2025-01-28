@@ -1,6 +1,6 @@
 const jsonwebtoken = require("jsonwebtoken");
 
-exports.authenticate = (req, res, next) => {
+export const authenticate = (req, res, next) => {
   const authHeader = req.headers.authorization;
   const token = authHeader && authHeader.split(" ")[1]; // Extrai o token
 

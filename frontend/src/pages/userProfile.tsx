@@ -96,7 +96,7 @@ const UserPage = () => {
               Meus Cartões
             </button>
             <button
-              onClick={() => setActiveTab('cards')}
+              onClick={() => setActiveTab('sales')}
               className={`w-1/5 py-4 text-center text-sm font-medium ${
                 activeTab === 'sales'
                   ? 'text-blue-600 border-b-2 border-blue-600'
