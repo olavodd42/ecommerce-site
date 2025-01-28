@@ -1,23 +1,28 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { FaEdit, FaCheck, FaTimes } from 'react-icons/fa';
+import { useNavigate } from 'react-router-dom';
 
 const Account = () => {
     const [email, setEmail] = useState('');
     const [name, setName] = useState('');
     const [phone, setPhone] = useState('');
-    const [hashedPassword, setHashedPassword] = useState('');
+    const [password, setPassword] = useState('');
+    const [currentPassword, setCurrentPassword] = useState('');
+    const [newPassword, setNewPassword] = useState('');
+    const [confirmPassword, setConfirmPassword] = useState('');
     const [error, setError] = useState<string | null>(null);
     const [success, setSuccess] = useState(false);
     const [loading, setLoading] = useState(false);
     const [isEditable, setIsEditable] = useState({ email: false, name: false, phone: false });
+    const navigate = useNavigate();
 
-    const validateEmail = (email) => {
+    const validateEmail = (email: string) => {
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         return emailRegex.test(email);
     };
 
-    const validatePhone = (phone) => {
+    const validatePhone = (phone: string) => {
         const phoneRegex = /^\(\d{2}\) \d{5}-\d{4}$/; // Exemplo: (55) 55555-5555
         return phoneRegex.test(phone);
     };
@@ -39,17 +44,23 @@ const Account = () => {
             setEmail(data.email);
             setName(data.name);
             setPhone(data.phone);
-            setHashedPassword(data.password);
         } catch (error) {
             console.error('Error:', error);
         }
     };
 
     useEffect(() => {
+        if (!localStorage.getItem('authToken')) {
+            console.error('Token não encontrado no localStorage.');
+            navigate('/login');
+        }
+    }, [navigate]);
+
+    useEffect(() => {
         fetchUser();
     }, []);
 
-    const handleSubmit = async (e) => {
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setError(null);
         setSuccess(false);
@@ -64,23 +75,33 @@ const Account = () => {
             return;
         }
 
+        if (newPassword && newPassword !== confirmPassword) {
+            setError("A nova senha e a confirmação não coincidem.");
+            return;
+        }
+
         try {
             setLoading(true);
+            const payload: any = {
+                email,
+                name,
+                phone,
+            };
+
+            if (currentPassword && newPassword) {
+                payload.currentPassword = currentPassword;
+                payload.newPassword = newPassword;
+            }
+
             await axios.put(
                 "http://localhost:4000/api/users/me",
+                payload,
                 {
-                  email,
-                  name,
-                  phone,
-                  password: hashedPassword, // Envia como "password" e não "hashedPassword"
-                },
-                {
-                  headers: {
-                    Authorization: `Bearer ${localStorage.getItem('authToken')}`,
-                  },
+                    headers: {
+                        Authorization: `Bearer ${localStorage.getItem('authToken')}`,
+                    },
                 }
-              );
-              
+            );
 
             setSuccess(true);
         } catch (error) {
@@ -93,7 +114,7 @@ const Account = () => {
         }
     };
 
-    const toggleEdit = (field) => {
+    const toggleEdit = (field: string) => {
         setIsEditable((prev) => ({ ...prev, [field]: !prev[field] }));
     };
 
@@ -128,19 +149,18 @@ const Account = () => {
                             {isEditable.email ? <FaCheck /> : <FaEdit />}
                         </button>
                     </div>
-
                     <div className="mb-4 relative">
                         <label htmlFor="name" className="block text-sm font-medium text-gray-700">
-                            Nome Completo
+                            Nome
                         </label>
                         <input
                             type="text"
                             id="name"
                             value={name}
                             onChange={(e) => setName(e.target.value)}
-                            disabled={!isEditable.name}
+                            disabled={!isEditable.email}
                             className={`w-full border p-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-blue-400 ${
-                                isEditable.name ? "bg-white" : "bg-gray-100 cursor-not-allowed"
+                                isEditable.email ? "bg-white" : "bg-gray-100 cursor-not-allowed"
                             }`}
                         />
                         <button
@@ -151,7 +171,6 @@ const Account = () => {
                             {isEditable.name ? <FaCheck /> : <FaEdit />}
                         </button>
                     </div>
-
                     <div className="mb-4 relative">
                         <label htmlFor="phone" className="block text-sm font-medium text-gray-700">
                             Telefone
@@ -173,6 +192,43 @@ const Account = () => {
                         >
                             {isEditable.phone ? <FaCheck /> : <FaEdit />}
                         </button>
+                    </div>
+                    {/* Campos de senha */}
+                    <div className="mb-4">
+                        <label htmlFor="currentPassword" className="block text-sm font-medium text-gray-700">
+                            Senha Atual
+                        </label>
+                        <input
+                            type="password"
+                            id="currentPassword"
+                            value={currentPassword}
+                            onChange={(e) => setCurrentPassword(e.target.value)}
+                            className="w-full border p-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-blue-400"
+                        />
+                    </div>
+                    <div className="mb-4">
+                        <label htmlFor="newPassword" className="block text-sm font-medium text-gray-700">
+                            Nova Senha
+                        </label>
+                        <input
+                            type="password"
+                            id="newPassword"
+                            value={newPassword}
+                            onChange={(e) => setNewPassword(e.target.value)}
+                            className="w-full border p-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-blue-400"
+                        />
+                    </div>
+                    <div className="mb-4">
+                        <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700">
+                            Confirme a Nova Senha
+                        </label>
+                        <input
+                            type="password"
+                            id="confirmPassword"
+                            value={confirmPassword}
+                            onChange={(e) => setConfirmPassword(e.target.value)}
+                            className="w-full border p-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-blue-400"
+                        />
                     </div>
 
                     <div className="mt-6">

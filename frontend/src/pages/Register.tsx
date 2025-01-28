@@ -26,11 +26,11 @@ const Register = () => {
   };
 
   useEffect(() => {
-    const token = localStorage.getItem("token");
-    if (token) {
-      navigate("/"); // Redireciona para a página inicial se estiver autenticado
-    }
-  }, [navigate]);
+      const token = localStorage.getItem("authToken");
+      if (token) {
+        navigate("/user"); // Redireciona para a página do usuário se estiver autenticado
+      }
+    }, [navigate]);
 
   const handleSubmit = async (e) => {
     e.preventDefault(); // Impede o comportamento padrão do formulário
