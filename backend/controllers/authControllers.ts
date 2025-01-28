@@ -117,8 +117,20 @@ exports.login = async (req, res) => {
 
 exports.getUser = async (req, res) => {
   try {
-    const user = await User.findByPk(req.user.id)
-    res.status(200).json(user)
+    const user = await User.findByPk(req.user.id);
+    if (!user) {
+      return res.status(404).json({ error: "Usuário não encontrado." });
+    }
+    res.status(200).json(user);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+}
+
+exports.getAllUsers = async (req, res) =>{
+  try {
+    const users = await User.findAll()
+    res.status(200).json(users)
   } catch (error) {
     res.status(500).json({ error: error.message })
   }

@@ -11,12 +11,13 @@ const UserPage = () => {
   const [activeTab, setActiveTab] = useState('orders');
   const navigate = useNavigate();
 
-  useEffect(() => {
-    const token = localStorage.getItem("token");
-    if (!token) {
-      navigate("/"); // Redireciona para a página inicial se estiver autenticado
-    }
-  }, [navigate]);
+  // useEffect(() => {
+  //   const token = localStorage.getItem("token");
+  //   console.log(localStorage.getItem("token"))
+  //   if (!token) {
+  //     navigate("/"); // Redireciona para a página inicial se estiver autenticado
+  //   }
+  // }, [navigate]);
 
   const renderContent = () => {
     switch (activeTab) {
@@ -28,11 +29,7 @@ const UserPage = () => {
       case 'account':
         return <Account />;
       case 'settings':
-<<<<<<< HEAD
         return <Config />;
-=======
-        return <Settings />;
->>>>>>> 60964bf2f5cb20a35ebb45b09d51f5328a70375b
       case 'cards':
         return <Cards />;
       case 'sales':

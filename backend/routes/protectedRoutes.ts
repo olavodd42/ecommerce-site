@@ -1,8 +1,8 @@
 const protectedRouter = require('express').Router()
-const { getUser, updateUser, deleteUser } = require('../controllers/authControllers')
+const { getUser, getAllUsers, updateUser, deleteUser } = require('../controllers/authControllers')
 
-protectedRouter.route('/user').get(getUser)
-protectedRouter.route('/user').put(updateUser)
-protectedRouter.route('/user').delete(deleteUser)
+protectedRouter.route('/users').get(getAllUsers)
+protectedRouter.route('/users/:id').get(getUser).put(updateUser).delete(deleteUser)
+protectedRouter.route('/me').get(getUser);
 
 module.exports = protectedRouter

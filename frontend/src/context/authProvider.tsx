@@ -32,12 +32,9 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   };
 
   const logout = () => {
-    console.log("Logout iniciado");
     localStorage.removeItem("authToken");
-    console.log("Token após remoção:", localStorage.getItem("authToken")); // Deve ser null
     setIsLoggedIn(false);
   };
-  
 
   return (
     <AuthContext.Provider value={{ isLoggedIn, login, logout }}>
@@ -53,11 +50,12 @@ export const useAuth = () => {
   }
   return context;
 };
+
 // Configure o Axios para adicionar o token automaticamente
 axios.interceptors.request.use((config) => {
-  const token = localStorage.getItem("authToken"); // Obtém o token do localStorage
+  const token = localStorage.getItem("authToken");
   if (token) {
-    config.headers.Authorization = `Bearer ${token}`; // Adiciona o token ao cabeçalho Authorization
+    config.headers.Authorization = `Bearer ${token}`;
   }
   return config;
 }, (error) => {
