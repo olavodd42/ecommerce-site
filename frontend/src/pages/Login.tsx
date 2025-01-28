@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { AiFillEye, AiFillEyeInvisible } from "react-icons/ai";
+import { useAuth } from '../context/authProvider.tsx'; // Importe o hook useAuth
 
 const Login = () => {
   const [email, setEmail] = useState("");
@@ -9,40 +10,27 @@ const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const { login } = useAuth(); // Use o hook useAuth para chamar a função de login
   const navigate = useNavigate();
 
   useEffect(() => {
-    const token = localStorage.getItem("token");
+    const token = localStorage.getItem("authToken");
     if (token) {
-      navigate("/user"); // Redireciona para a página inicial se estiver autenticado
+      navigate("/user"); // Redireciona para a página do usuário se estiver autenticado
     }
   }, [navigate]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError(null);
-  
+
     try {
       setLoading(true);
-      const response = await axios.post("http://localhost:4000/api/users/login", {
-        email,
-        password,
-      });
-  
-      const { token } = response.data;
-  
-      // Salva o token no localStorage
-      localStorage.setItem("authToken", token);
-  
-      // Redireciona para a home
-      navigate("/");
-  
-      // Limpa os campos
-      setEmail("");
-      setPassword("");
+      await login(email, password); // Chama a função de login do contexto de autenticação
+      navigate("/user");
     } catch (error) {
       console.error(error);
-      setError(error.response?.data?.error || "Erro ao logar. Tente novamente.");
+      setError(error.message || "Erro ao logar. Tente novamente.");
     } finally {
       setLoading(false);
     }

@@ -68,52 +68,48 @@ exports.register = async (req, res) => {
   }
 };
 
-
 exports.login = async (req, res) => {
-  try {
-    const { email, password } = req.body;
+  const { email, password } = req.body;
 
-    // Validação dos dados de entrada
-    if (!email || !password) {
-      return res.status(400).json({ error: "E-mail e senha são obrigatórios." });
-    }
-
-    // Encontrar o usuário pelo e-mail
-    const user = await User.findOne({ where: { email } });
-
-    if (!user) {
-      return res.status(404).json({ error: "Usuário não encontrado." });
-    }
-
-    // Verificar a senha
-    const validPassword = bcrypt.compareSync(password, user.password);
-    if (!validPassword) {
-      return res.status(401).json({ error: "Senha inválida." });
-    }
-
-    // Gerar token JWT com expiração de 1 hora
-    const token = jwt.sign(
-      { id: user.id, email: user.email },
-      process.env.JWT_SECRET || "defaultSecret", // Configuração de fallback
-      { expiresIn: "1h" }
-    );
-
-    res.status(200).json({
-      message: "Login realizado com sucesso.",
-      token,
-      user: {
-        id: user.id,
-        email: user.email,
-        name: user.name,
-        phone: user.phone,
-      },
-    });
-  } catch (err) {
-    console.error("Erro no login:", err.message); // Log do erro no servidor
-    res.status(500).json({ error: "Erro ao fazer login. Tente novamente." });
+  // Validação dos dados de entrada
+  if (!email || !password) {
+    return res.status(400).json({ error: "E-mail e senha são obrigatórios." });
   }
-};
 
+  // Encontrar o usuário pelo e-mail
+  const user = await User.findOne({ where: { email } });
+
+  if (!user) {
+    return res.status(404).json({ error: "Usuário não encontrado." });
+  }
+
+  // Verificar a senha
+  const validPassword = bcrypt.compareSync(password, user.password);
+  if (!validPassword) {
+    return res.status(401).json({ error: "Senha inválida." });
+  }
+
+  // Gerar token JWT com expiração de 1 hora
+  const expiresIn = 3600; // 1 hora
+  const token = jwt.sign(
+    { id: user.id, email: user.email },
+    process.env.JWT_SECRET || "defaultSecret", // Configuração de fallback
+    { expiresIn }
+  );
+
+  res.status(200).json({
+    message: "Login realizado com sucesso.",
+    token,
+    expiresIn, // Adicione isso para garantir que o front-end receba a expiração
+    user: {
+      id: user.id,
+      email: user.email,
+      name: user.name,
+      phone: user.phone
+    }
+  });
+  
+};
 
 exports.getUser = async (req, res) => {
   try {
@@ -138,18 +134,33 @@ exports.getAllUsers = async (req, res) =>{
 
 exports.updateUser = async (req, res) => {
   try {
-    const { email, name, password, phone } = req.body
-    const user = await User.findByPk(req.user.id)
-    user.email = email
-    user.name = name
-    user.password = bcrypt.hashSync(password, 10)
-    user.phone = phone
-    await user.save()
-    res.status(200).json(user)
+    const { email, name, password, phone } = req.body;
+
+    // Verifica se o usuário existe
+    const user = await User.findByPk(req.user.id);
+    if (!user) {
+      return res.status(404).json({ error: "Usuário não encontrado" });
+    }
+
+    // Atualiza campos fornecidos
+    if (email) user.email = email;
+    if (name) user.name = name;
+    if (phone) user.phone = phone;
+
+    // Apenas rehash se uma nova senha for fornecida
+    if (password) {
+      user.password = bcrypt.hashSync(password, 10);
+    }
+
+    // Salva alterações
+    await user.save();
+    res.status(200).json(user);
   } catch (error) {
-    res.status(500).json({ error: error.message })
+    console.error(error);
+    res.status(500).json({ error: error.message });
   }
-}
+};
+
 
 exports.deleteUser = async (req, res) => {
   try {

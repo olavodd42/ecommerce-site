@@ -10,17 +10,15 @@ const Header = () => {
   const { isLoggedIn, logout } = useAuth(); // Use o hook useAuth para obter o estado de autenticação
   const navigate = useNavigate();
 
-  
-
   const toggleCategories = () => setShowCategories(!showCategories);
   const handleLogout = () => {
     logout(); // Chama a função de logout
     navigate("/login"); // Redireciona para a página de login
   };
 
-  const testConnect = ()=>{
-    console.log("Estado de login:", isLoggedIn)
-  }
+  const testConnect = () => {
+    console.log("Estado de login:", isLoggedIn);
+  };
 
   return (
     <nav className="bg-gradient-to-r from-blue-500 via-blue-600 to-blue-700 text-white shadow-md fixed w-full z-50 h-16">
@@ -92,19 +90,6 @@ const Header = () => {
           <li><Link to="/" className="hover:text-gray-300 transition">Home</Link></li>
           <li><Link to="/cart" className="hover:text-gray-300 transition">Carrinho</Link></li>
           <li><Link to="/bestsellers" className="hover:text-gray-300 transition">Mais Vendidos</Link></li>
-          {isLoggedIn ? (
-            <>
-              <Link to="/user" className="hover:text-gray-300">Perfil</Link>
-              <button
-                onClick={handleLogout}
-                className="text-sm font-medium hover:text-gray-300"
-              >
-                Sair
-              </button>
-            </>
-          ) : (
-            <Link to="/login" className="hover:text-gray-300">Entrar</Link>
-          )}
         </ul>
 
         {/* Ações e Menu Mobile */}
@@ -115,10 +100,10 @@ const Header = () => {
           <Link to="/cart">
             <ShoppingCartIcon className="w-5 h-5 cursor-pointer hover:text-gray-300" />
           </Link>
+          <button onClick={testConnect}>Teste</button>
           {isLoggedIn ? (
             <>
               <Link to="/user" className="hover:text-gray-300">Perfil</Link>
-              <button onClick={testConnect}>Teste</button>
               <button
                 onClick={handleLogout}
                 className="text-sm font-medium hover:text-gray-300"
@@ -141,7 +126,6 @@ const Header = () => {
             {isMenuOpen ? <XIcon className="w-6 h-6" /> : <MenuIcon className="w-6 h-6" />}
           </button>
         </div>
-        
       </div>
 
       {/* Menu Mobile */}
