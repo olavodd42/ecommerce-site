@@ -1,12 +1,10 @@
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import Joi from 'joi';
-import { Response } from 'express';
 import User from '../models/userModel';
-import { IGetUserAuthInfoRequest } from './type';
 
 // Registro de novo usuário
-exports.register = async (req: IGetUserAuthInfoRequest, res: Response) => {
+exports.register = async (req, res) => {
   const schema = Joi.object({
     email: Joi.string().email().required().messages({
       "string.email": "Por favor, insira um e-mail válido.",
@@ -60,7 +58,7 @@ exports.register = async (req: IGetUserAuthInfoRequest, res: Response) => {
 };
 
 // Login
-exports.login = async (req: IGetUserAuthInfoRequest, res: Response) => {
+exports.login = async (req, res) => {
   const { email, password } = req.body;
 
   if (!email || !password) {
@@ -102,7 +100,7 @@ exports.login = async (req: IGetUserAuthInfoRequest, res: Response) => {
 };
 
 // Obter usuário atual
-exports.getUser = async (req: IGetUserAuthInfoRequest, res: Response) => {
+exports.getUser = async (req, res) => {
   try {
     const user = await User.findByPk(req.user?.id);
     if (!user) {
@@ -115,7 +113,7 @@ exports.getUser = async (req: IGetUserAuthInfoRequest, res: Response) => {
 };
 
 // Obter todos os usuários
-exports.getAllUsers = async (req: IGetUserAuthInfoRequest, res: Response) => {
+exports.getAllUsers = async (req, res) => {
   try {
     const users = await User.findAll();
     res.status(200).json(users);
@@ -125,7 +123,7 @@ exports.getAllUsers = async (req: IGetUserAuthInfoRequest, res: Response) => {
 };
 
 // Atualizar usuário
-exports.updateUser = async (req: IGetUserAuthInfoRequest, res: Response) => {
+exports.updateUser = async (req, res) => {
   try {
     const { email, name, phone, currentPassword, newPassword } = req.body;
     const user = await User.findByPk(req.user?.id);
@@ -158,7 +156,7 @@ exports.updateUser = async (req: IGetUserAuthInfoRequest, res: Response) => {
 };
 
 // Deletar usuário
-exports.deleteUser = async (req: IGetUserAuthInfoRequest, res: Response) => {
+exports.deleteUser = async (req, res) => {
   try {
     const user = await User.findByPk(req.user?.id);
     if (!user) {
@@ -167,6 +165,6 @@ exports.deleteUser = async (req: IGetUserAuthInfoRequest, res: Response) => {
     await user.destroy();
     res.status(200).json({ message: "Usuário deletado com sucesso." });
   } catch (error) {
-    res.status{500}.json({ error: (error as Error).message });
+    res.status(500).json({ error: (error as Error).message });
   }
 };

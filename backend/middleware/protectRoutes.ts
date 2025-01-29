@@ -1,4 +1,5 @@
 const jsonwebtoken = require("jsonwebtoken");
+import { Response, NextFunction } from "express";
 
 export const authenticate = (req, res, next) => {
   const authHeader = req.headers.authorization;

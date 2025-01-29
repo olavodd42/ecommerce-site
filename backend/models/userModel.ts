@@ -1,5 +1,6 @@
 import { Sequelize, DataTypes } from 'sequelize';
-const db = require('../config/db.ts');
+const {db} = require('../config/db.ts');
+import Product from './productModel'; // Importe o modelo Product
 
 const User = db.define('user', {
   id: {
@@ -23,5 +24,8 @@ const User = db.define('user', {
     allowNull: false,
   },
 });
+
+User.hasMany(Product, { foreignKey: 'user_id' });
+Product.belongsTo(User, { foreignKey: 'user_id' });
 
 export default User; // Use exportação padrão

@@ -5,6 +5,7 @@ import protectedProductRouter from './routes/protectedProductRoutes';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import { authenticate } from './middleware/protectRoutes';
+const { db } = require('./config/db'); // Importe a instância do Sequelize
 
 dotenv.config();
 
@@ -18,6 +19,12 @@ app.use('/api/users', authenticate, protectRouter);
 app.use('/api/products', authenticate, protectedProductRouter);
 app.use('/api/products', protectedProductRouter);
 
-app.listen(PORT, () => {
-  console.log(`Server is running on http://localhost:${PORT}/`);
+// Sincronize os modelos com o banco de dados
+db.sync({ force: true }).then(() => {
+  console.log('Tabelas criadas com sucesso!');
+  app.listen(PORT, () => {
+    console.log(`Server is running on http://localhost:${PORT}/`);
+  });
+}).catch((error) => {
+  console.error('Erro ao sincronizar com o banco de dados:', error);
 });
