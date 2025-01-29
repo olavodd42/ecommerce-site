@@ -31,7 +31,8 @@ exports.createProduct = async (req, res) => {
 
 exports.getProduct = async (req, res) => {
   try {
-    const product = await Product.findByPk(req.product.id);
+    const product = await Product.findByPk(req.params.id);
+    //console.log(req);
     if (!product) {
       return res.status(404).json({ error: "Produto não encontrado." });
     }

@@ -66,12 +66,20 @@ const ProductDetail = () => {
                         <h2 className="text-xl font-bold">Especificações</h2>
                         <table className="w-full border-collapse">
                             <tbody>
-                                {product.specs.map(({ key, value }) => (
-                                    <tr key={key} className="border-b">
-                                        <td className="py-2 font-semibold">{key}</td>
-                                        <td className="py-2 text-gray-700">{value}</td>
-                                    </tr>
-                                ))}
+                            {product.specs && typeof product.specs === 'object' ? (
+                                Object.entries(product.specs).map(([key, value]) => (
+                                <tr key={key} className="border-b">
+                                    <td className="py-2 font-semibold">{key}</td>
+                                    <td className="py-2 text-gray-700">{value}</td>
+                                </tr>
+                                ))
+                            ) : (
+                                <tr>
+                                <td colSpan={2} className="py-2 text-gray-500 text-center">
+                                    Nenhuma especificação disponível
+                                </td>
+                                </tr>
+                            )}
                             </tbody>
                         </table>
                     </div>
