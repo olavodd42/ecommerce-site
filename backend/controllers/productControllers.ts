@@ -3,7 +3,7 @@ import Product from '../models/productModel';
 
 exports.createProduct = async (req, res) => {
   try {
-    const { name, category, price, freight, description, specs } = req.body;
+    const { name, category, price, quantity, sales, freight, description, specs } = req.body;
     const user_id = req.user.id;
 
     // URL da imagem (se enviada)
@@ -14,6 +14,8 @@ exports.createProduct = async (req, res) => {
       user_id,
       category,
       price,
+      quantity,
+      sales,
       freight,
       description,
       specs,
@@ -51,7 +53,7 @@ exports.getAllProducts = async (req, res) => {
 exports.updateProduct = async (req, res) => {
   try {
     const { id } = req.params;
-    const { category, price, freight, description, specs, image } = req.body;
+    const { category, price, quantity, sales, freight, description, specs, image } = req.body;
 
     const product = await Product.findByPk(id);
     if (!product) {
@@ -60,6 +62,8 @@ exports.updateProduct = async (req, res) => {
 
     if (category) product.category = category;
     if (price) product.price = price;
+    if (quantity) product.quantity = quantity;
+    if (sales) product.sales = sales;
     if (freight) product.freight = freight;
     if (description) product.description = description;
     if (specs) product.specs = specs;

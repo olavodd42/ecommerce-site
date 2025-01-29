@@ -20,8 +20,8 @@ app.use('/api/products', authenticate, protectedProductRouter);
 app.use('/api/products', protectedProductRouter);
 
 // Sincronize os modelos com o banco de dados
-db.sync({ force: true }).then(() => {
-  console.log('Tabelas criadas com sucesso!');
+db.sync({ alter: true }).then(() => {
+  console.log('Tabelas sincronizadas com sucesso!');
   app.listen(PORT, () => {
     console.log(`Server is running on http://localhost:${PORT}/`);
   });

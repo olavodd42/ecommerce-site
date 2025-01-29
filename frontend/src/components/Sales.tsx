@@ -1,19 +1,138 @@
-import React from 'react';
+import React, { useRef } from 'react';
 import axios from 'axios';
+
+interface InputFieldProps {
+    label: string;
+    type: string;
+    value: string | number;
+    onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+    onBlur?: () => void;
+    required?: boolean;
+    error?: string;
+}
+
+const InputField: React.FC<InputFieldProps> = React.memo(({ label, type, value, onChange, onBlur, required, error }) => (
+    <div className="mb-4 relative">
+        <label htmlFor={label.toLowerCase()} className="block text-sm font-medium text-gray-700">
+            {label} {required && <span className="text-red-500">*</span>}
+        </label>
+        <input
+            type={type}
+            id={label.toLowerCase()}
+            value={value}
+            onChange={onChange}
+            onBlur={onBlur}
+            className={`w-full border p-2 rounded-lg focus:outline-none focus:ring-2 ${
+                error ? "border-red-500" : "focus:ring-blue-400 focus:border-blue-400"
+            }`}
+        />
+        {error && <p className="text-red-500 text-sm mt-1">{error}</p>}
+    </div>
+));
 
 const Sales = () => {
     const [name, setName] = React.useState("");
     const [category, setCategory] = React.useState("");
     const [price, setPrice] = React.useState("");
+    const [quantity, setQuantity] = React.useState("");
     const [freight, setFreight] = React.useState("");
     const [description, setDescription] = React.useState("");
-    const [specs, setSpecs] = React.useState("");
-    const [image, setImage] = React.useState<File | null>(null); // Armazenar o arquivo de imagem
+    const [image, setImage] = React.useState<File | null>(null);
+    const [imagePreview, setImagePreview] = React.useState<string | null>(null);
     const [pairs, setPairs] = React.useState([{ key: '', value: '' }]);
     const [loading, setLoading] = React.useState(false);
     const [error, setError] = React.useState<string | null>(null);
     const [success, setSuccess] = React.useState(false);
-    const [user_id, setUser_id] = React.useState("");
+    const [errors, setErrors] = React.useState<Record<string, string>>({});
+
+    const imageInputRef = useRef<HTMLInputElement | null>(null); // Referência para o input de imagem
+
+    const formatCurrency = (value: string) => {
+        const numberValue = parseFloat(value.replace(',', '.'));
+        if (isNaN(numberValue)) return '';
+        return numberValue.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+    };
+
+    const handlePriceChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        setPrice(e.target.value);
+    };
+
+    const handleFreightChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        setFreight(e.target.value);
+    };
+
+    const handleBlurFormat = (setter: React.Dispatch<React.SetStateAction<string>>) => {
+        return () => {
+            setter((prev) => formatCurrency(prev));
+        };
+    };
+
+    const sales = [
+        {
+            label: "Nome",
+            type: "text",
+            value: name,
+            onChange: (e: React.ChangeEvent<HTMLInputElement>) => setName(e.target.value),
+            required: true,
+            error: errors.name,
+        },
+        {
+            label: "Categoria",
+            type: "text",
+            value: category,
+            onChange: (e: React.ChangeEvent<HTMLInputElement>) => setCategory(e.target.value),
+            required: true,
+            error: errors.category,
+        },
+        {
+            label: "Preço",
+            type: "text",
+            value: price,
+            onChange: handlePriceChange,
+            onBlur: handleBlurFormat(setPrice),
+            required: true,
+            error: errors.price,
+        },
+        {
+            label: "Quantidade",
+            type: "number",
+            value: quantity,
+            onChange: (e: React.ChangeEvent<HTMLInputElement>) => setQuantity(e.target.value),
+            required: true,
+            error: errors.quantity,
+        },
+        {
+            label: "Frete",
+            type: "text",
+            value: freight,
+            onChange: handleFreightChange,
+            onBlur: handleBlurFormat(setFreight),
+            required: true,
+            error: errors.freight,
+        }
+    ];
+
+    const validateForm = () => {
+        const newErrors: Record<string, string> = {};
+        if (!name) newErrors.name = "O nome é obrigatório.";
+        if (!category) newErrors.category = "A categoria é obrigatória.";
+        if (!price) newErrors.price = "O preço é obrigatório.";
+        if (!quantity) newErrors.quantity = "A quantidade é obrigatória.";
+        if (!description) newErrors.description = "A descrição é obrigatória.";
+        if (!image) newErrors.image = "A imagem é obrigatória.";
+
+        setErrors(newErrors);
+        return Object.keys(newErrors).length === 0;
+    };
+
+    const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        if (e.target.files && e.target.files[0]) {
+            const file = e.target.files[0];
+            setImage(file);
+            
+            setImagePreview(URL.createObjectURL(file));
+        }
+    };
 
     // Função para atualizar um par de chave-valor
     const handlePairChange = (index: number, field: string, newValue: string) => {
@@ -50,23 +169,20 @@ const Sales = () => {
         setError(null);
         setSuccess(false);
 
+        if (!validateForm()) return;
+
         try {
             setLoading(true);
-
-            // Criar um objeto FormData para enviar a imagem
             const formData = new FormData();
             formData.append('name', name);
-            formData.append('user_id', user_id);
             formData.append('category', category);
-            formData.append('price', price);
-            formData.append('freight', freight);
+            formData.append('price', price.replace(',', '.'));
+            formData.append('quantity', quantity);
+            formData.append('freight', freight.replace(',', '.'));
             formData.append('description', description);
-            formData.append('specs', JSON.stringify(generateJson())); // Enviar o JSON de especificações
-            if (image) {
-                formData.append('image', image); // Adicionar a imagem ao FormData
-            }
+            formData.append('specs', JSON.stringify(generateJson()));
+            if (image) formData.append('image', image);
 
-            // Enviar a requisição para o backend
             await axios.post("http://localhost:4000/api/products/", formData, {
                 headers: {
                     'Content-Type': 'multipart/form-data',
@@ -75,14 +191,19 @@ const Sales = () => {
             });
 
             setSuccess(true);
+            // Resetar o formulário
             setName("");
             setCategory("");
             setPrice("");
+            setQuantity("");
             setFreight("");
             setDescription("");
-            setSpecs("");
             setImage(null);
+            setImagePreview(null);
             setPairs([{ key: '', value: '' }]);
+            if (imageInputRef.current) {
+                imageInputRef.current.value = ''; // Resetar o input de imagem
+            }
         } catch (error) {
             console.error(error);
             setError(
@@ -97,62 +218,16 @@ const Sales = () => {
         <div className="flex items-center justify-center min-h-screen bg-gray-50">
             <div className="w-full max-w-md bg-white p-8 rounded-lg shadow-md">
                 <h1 className="text-2xl font-bold text-center mb-6">Criar Produto</h1>
-
                 {error && <p className="text-red-500 text-center mb-4">{error}</p>}
                 {success && <p className="text-green-500 text-center mb-4">Produto criado com sucesso!</p>}
-
-                <form onSubmit={handleSubmit}>
-                    <div className="mb-4 relative">
-                        <label htmlFor="name" className="block text-sm font-medium text-gray-700">
-                            Nome
-                        </label>
-                        <input
-                            type="text"
-                            id="name"
-                            value={name}
-                            onChange={(e) => setName(e.target.value)}
-                            className="w-full border p-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-blue-400"
-                        />
-                    </div>
-                    <div className="mb-4 relative">
-                        <label htmlFor="category" className="block text-sm font-medium text-gray-700">
-                            Categoria
-                        </label>
-                        <input
-                            type="text"
-                            id="category"
-                            value={category}
-                            onChange={(e) => setCategory(e.target.value)}
-                            className="w-full border p-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-blue-400"
-                        />
-                    </div>
-                    <div className="mb-4 relative">
-                        <label htmlFor="price" className="block text-sm font-medium text-gray-700">
-                            Preço
-                        </label>
-                        <input
-                            type="number"
-                            id="price"
-                            value={price}
-                            onChange={(e) => setPrice(e.target.value)}
-                            className="w-full border p-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-blue-400"
-                        />
-                    </div>
-                    <div className="mb-4 relative">
-                        <label htmlFor="freight" className="block text-sm font-medium text-gray-700">
-                            Frete
-                        </label>
-                        <input
-                            type="text"
-                            id="freight"
-                            value={freight}
-                            onChange={(e) => setFreight(e.target.value)}
-                            className="w-full border p-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-blue-400"
-                        />
-                    </div>
+                
+                <form onSubmit={handleSubmit} className="grid grid-cols-1 gap-4">
+                    {sales.map((field, index) => (
+                        <InputField key={index} {...field} />
+                    ))}
                     <div className="mb-4 relative">
                         <label htmlFor="product-description" className="block text-sm font-medium text-gray-700">
-                            Descrição do Produto
+                            Descrição do Produto<span className="text-red-500">*</span>
                         </label>
                         <textarea
                             id="product-description"
@@ -160,16 +235,19 @@ const Sales = () => {
                             rows={4}
                             value={description}
                             onChange={(e) => setDescription(e.target.value)}
-                            className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                            className={`mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none
+                                focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm ${errors.description ? "border-red-500" :
+                                "focus:ring-blue-400 focus:border-blue-400"}`}
                             placeholder="Insira a descrição do produto aqui..."
                         />
                         <p className="mt-2 text-sm text-gray-500">
                             {description.length}/500 caracteres
                         </p>
+                        {errors.description && <p className="text-red-500 text-sm mt-1">{errors.description}</p>}
                     </div>
                     <div className="mb-4 relative">
-                        <label htmlFor="product-description" className="block text-sm font-medium text-gray-700">
-                            Especificações do Produto
+                        <label htmlFor="product-specs" className="block text-sm font-medium text-gray-700">
+                            Especificações do Produto<span className="text-red-500">*</span>
                         </label>
                         {pairs.map((pair, index) => (
                             <div key={index} className="mb-4">
@@ -203,7 +281,7 @@ const Sales = () => {
                         >
                             Adicionar Par
                         </button>
-
+                        {errors.specs && <p className="text-red-500 text-sm mt-1">{errors.specs}</p>}
                         <div className="mt-6">
                             <h2 className="text-xl font-semibold mb-2">JSON Gerado:</h2>
                             <pre className="bg-gray-100 p-4 rounded-md text-sm">
@@ -218,20 +296,44 @@ const Sales = () => {
                         <input
                             type="file"
                             id="image"
-                            onChange={(e) => setImage(e.target.files ? e.target.files[0] : null)}
-                            className="w-full border p-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-blue-400"
+                            name="image"
+                            ref={imageInputRef} // Adicione a referência ao input de imagem
+                            onChange={(e) => handleImageChange(e)}
+                            className={`w-full border p-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-blue-400
+                                ${errors.image ? "border-red-500" : "focus:ring-blue-400 focus:border-blue-400"}`}
                         />
+                        {errors.image && <p className="text-red-500 text-sm mt-1">{errors.image}</p>}
+                        {imagePreview && (
+                            <div className="mt-4 z-40">
+                                <img src={imagePreview} alt="Preview" className="w-32 h-32 object-cover rounded-md" />
+                            </div>
+                        )}
                     </div>
 
                     <div className="mt-6">
-                        <button
-                            type="submit"
-                            className={`w-full text-white py-2 rounded-lg transition duration-300 ${
-                                loading ? "bg-gray-500 cursor-not-allowed" : "bg-blue-500 hover:bg-blue-600"
-                            }`}
-                            disabled={loading}
-                        >
+                        <button type="submit" disabled={loading} className="w-full bg-blue-500 text-white py-2 rounded-lg">
                             {loading ? "Salvando..." : "Salvar Alterações"}
+                        </button>
+                        <button
+                            type="button"
+                            onClick={() => {
+                                setName("");
+                                setCategory("");
+                                setPrice("");
+                                setQuantity("");
+                                setFreight("");
+                                setDescription("");
+                                setImage(null);
+                                setPairs([{ key: '', value: '' }]);
+                                setError(null);
+                                setSuccess(false);
+                                if (imageInputRef.current) {
+                                    imageInputRef.current.value = ''; // Resetar o input de imagem
+                                }
+                            }}
+                            className="w-full mt-4 px-4 py-2 bg-gray-500 text-white rounded-md hover:bg-gray-600"
+                        >
+                        Cancelar
                         </button>
                     </div>
                 </form>

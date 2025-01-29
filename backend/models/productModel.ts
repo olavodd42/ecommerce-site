@@ -29,6 +29,15 @@ const Product = db.define('product', {
     type: DataTypes.DOUBLE,
     allowNull: false,
   },
+  quantity: {
+    type: DataTypes.INTEGER,
+    allowNull: false,
+  },
+  sales: {
+    type: DataTypes.INTEGER,
+    allowNull: false,
+    defaultValue: 0,
+  },
   freight: {
     type: DataTypes.DOUBLE,
     allowNull: false,
