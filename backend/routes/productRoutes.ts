@@ -1,5 +1,7 @@
 const productRoutes = require('express').Router();
-const { getProducts, getAllProducts } = require('../controllers/productControllers');
+const { getProduct, getAllProducts } = require('../controllers/productControllers');
 
 productRoutes.route('/').get(getAllProducts);
-productRoutes.route('/:id').get(getProducts);
+productRoutes.route('/:id').get(getProduct);
+
+export default productRoutes;

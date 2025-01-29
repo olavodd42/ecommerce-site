@@ -7,12 +7,13 @@ import Home from "./pages/Home.tsx";
 import Cart from "./pages/Cart.tsx";
 import Checkout from "./pages/Checkout.tsx";
 import Login from './pages/Login.tsx';
-import Product from "./pages/Product.tsx";
 import Register from './pages/Register.tsx';
 import SearchPage from './pages/searchPage.tsx';
 import UserPage from './pages/userProfile.tsx';
 import ProtectedRoute from './components/ProtectedRoute.tsx';
 import { AuthProvider } from './context/authProvider.tsx';
+import ProductList from './components/ProductList.tsx';
+import ProductDetail from './components/ProductDetail.tsx';
 
 const App = () => {
   return (
@@ -27,7 +28,6 @@ const App = () => {
               <Route path="/cart" element={<Cart />} />
               <Route path="/checkout" element={<Checkout />} />
               <Route path="/login" element={<Login />} />
-              <Route path="/product/:id" element={<Product />} />
               <Route path="/register" element={<Register />} />
               <Route path="/search" element={<SearchPage />} />
               <Route
@@ -38,6 +38,8 @@ const App = () => {
                   </ProtectedRoute>
                 }
               />
+              <Route path="/products" element={<ProductList />} />
+              <Route path="/products/:id" element={<ProductDetail />} />
             </Routes>
           </main>
           <Footer />
