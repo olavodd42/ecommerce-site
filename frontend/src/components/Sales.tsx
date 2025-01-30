@@ -70,11 +70,11 @@ const Sales = () => {
         setFreight(numericValue);
     };
 
-    const handleBlurFormat = (setter: React.Dispatch<React.SetStateAction<string>>) => {
-        return () => {
-            setter((prev) => formatCurrency(prev));
-        };
-    };
+    // const handleBlurFormat = (setter: React.Dispatch<React.SetStateAction<string>>) => {
+    //     return () => {
+    //         setter((prev) => formatCurrency(prev));
+    //     };
+    // };
 
     const sales = [
         {

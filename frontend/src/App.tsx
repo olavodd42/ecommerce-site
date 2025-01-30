@@ -14,6 +14,7 @@ import ProtectedRoute from './components/ProtectedRoute.tsx';
 import { AuthProvider } from './context/authProvider.tsx';
 import ProductList from './components/ProductList.tsx';
 import ProductDetail from './components/ProductDetail.tsx';
+import ProductEdit from './components/ProductEdit.tsx';
 import axios from 'axios';
 
 const App = () => {
@@ -36,6 +37,14 @@ const App = () => {
                 element={
                   <ProtectedRoute>
                     <UserPage />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/products/:id/edit"
+                element={
+                  <ProtectedRoute>
+                    <ProductEdit />
                   </ProtectedRoute>
                 }
               />

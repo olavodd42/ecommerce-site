@@ -6,6 +6,7 @@ import Account from '../components/Account.tsx';
 import Sales from '../components/Sales.tsx';
 import Wishlist from '../components/Wishlist.tsx'; // Corrigido para 'Wishlist'
 import Cards from '../components/Cards.tsx';
+import MyProducts from '../components/myProducts.tsx';
 
 const UserPage = () => {
   const [activeTab, setActiveTab] = useState('orders');
@@ -34,6 +35,8 @@ const UserPage = () => {
         return <Cards />;
       case 'sales':
         return <Sales />;
+      case 'myproducts':
+        return <MyProducts />;
       default:
         return null;
     }
@@ -104,6 +107,16 @@ const UserPage = () => {
               }`}
             >
               Vendas
+            </button>
+            <button
+              onClick={() => setActiveTab('myproducts')}
+              className={`w-1/5 py-4 text-center text-sm font-medium ${
+                activeTab === 'sales'
+                  ? 'text-blue-600 border-b-2 border-blue-600'
+                  : 'text-gray-600 hover:text-blue-600'
+              }`}
+            >
+              Meus Produtos
             </button>
           </div>
           <div className="p-6">{renderContent()}</div>

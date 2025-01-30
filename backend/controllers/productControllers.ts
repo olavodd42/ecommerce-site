@@ -42,6 +42,21 @@ exports.getProduct = async (req, res) => {
   }
 }
 
+exports.getFeaturedProducts = async (req, res) => {
+  try {
+    const featuredProducts = await Product.findAll({
+      order: [['sales', 'DESC']], // Ordena pelos mais vendidos
+      limit: 10, // Retorna apenas os 10 mais vendidos
+    });
+
+    res.status(200).json(featuredProducts);
+  } catch (error) {
+    res.status(500).json({ error: (error as Error).message });
+  }
+};
+
+
+
 exports.getAllProducts = async (req, res) => {
   try {
     const products = await Product.findAll();

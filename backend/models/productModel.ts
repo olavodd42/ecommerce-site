@@ -48,6 +48,10 @@ const Product = db.define('product', {
     type: DataTypes.STRING,
     allowNull: false,
   },
+  featured: {
+    type: DataTypes.BOOLEAN,
+    defaultValue: false, // Por padrão, os produtos não são destacados
+  },  
 });
 
 export default Product;

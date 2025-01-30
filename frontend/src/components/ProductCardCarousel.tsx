@@ -29,7 +29,7 @@ const ProductCarousel = ({products = []}) => {
           <SwiperSlide key={product.id}>
             <div className="bg-white shadow-md rounded-lg overflow-hidden">
               <img
-                src={product.image}
+                src={`http://localhost:4000${product.image}`}
                 alt={product.name}
                 className="w-full h-48 object-cover"
               />

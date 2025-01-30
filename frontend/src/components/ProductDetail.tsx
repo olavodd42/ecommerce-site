@@ -48,7 +48,12 @@ const ProductDetail = () => {
                     </div>
                     <div>
                         <h2 className="text-xl font-bold">Preço</h2>
-                        <p className="text-gray-700">R$ {product.price}</p>
+                        <p className="text-gray-700">
+                            {new Intl.NumberFormat('pt-BR', {
+                                style: 'currency',
+                                currency: 'BRL',
+                            }).format(product.price)}
+                        </p>
                     </div>
                     <div>
                         <h2 className="text-xl font-bold">Quantidade em Estoque</h2>
@@ -56,7 +61,12 @@ const ProductDetail = () => {
                     </div>
                     <div>
                         <h2 className="text-xl font-bold">Frete</h2>
-                        <p className="text-gray-700">R$ {product.freight}</p>
+                        <p className="text-gray-700">
+                            {new Intl.NumberFormat('pt-BR', {
+                                style: 'currency',
+                                currency: 'BRL',
+                            }).format(product.freight)}
+                            </p>
                     </div>
                     <div>
                         <h2 className="text-xl font-bold">Descrição</h2>
