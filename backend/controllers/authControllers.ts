@@ -2,6 +2,8 @@ import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import Joi from 'joi';
 import User from '../models/userModel';
+import dotenv from 'dotenv';
+dotenv.config({ path: require('path').resolve(__dirname, '../.env') });
 
 // Registro de novo usuário
 exports.register = async (req, res) => {
@@ -76,10 +78,19 @@ exports.login = async (req, res) => {
       return res.status(401).json({ error: "Senha inválida." });
     }
 
-    const expiresIn = 3600;
+    // Verifique se JWT_SECRET está definido
+    const jwtSecret = process.env.JWT_SECRET;
+    console.log(jwtSecret);
+    if (!jwtSecret) {
+      return res.status(500).json({ error: "JWT_SECRET não está definido." });
+    }
+
+
+    const expiresIn = 30 * 24 * 60 * 60; // 30 dias em segundos
+
     const token = jwt.sign(
       { id: user.id, email: user.email },
-      process.env.JWT_SECRET || "defaultSecret",
+      process.env.JWT_SECRET as string,
       { expiresIn }
     );
 

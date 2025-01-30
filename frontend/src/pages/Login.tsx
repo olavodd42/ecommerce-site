@@ -2,39 +2,58 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { AiFillEye, AiFillEyeInvisible } from "react-icons/ai";
-import { useAuth } from '../context/authProvider.tsx'; // Importe o hook useAuth
+import {useAuth} from '../context/authProvider.tsx'; // Importe o hook useAuth
 
 const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const { authenticate, setLoggedUser, isAuthenticated } = useAuth();
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
-  const { login } = useAuth(); // Use o hook useAuth para chamar a função de login
+  const [error, setError] = useState(null); // Use o hook useAuth para chamar a função de login
   const navigate = useNavigate();
 
   useEffect(() => {
-    const token = localStorage.getItem("authToken");
-    if (token) {
-      navigate("/user"); // Redireciona para a página do usuário se estiver autenticado
-    }
-  }, [navigate]);
+    if (isAuthenticated) navigate("/user");
+  }, [isAuthenticated]);
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
-
+    setLoading(true);
+    
     try {
-      setLoading(true);
-      await login(email, password); // Chama a função de login do contexto de autenticação
-      navigate("/user");
+      const res = await authenticate({ email, password });
+      console.log(res.data);
+      setLoggedUser(res.data); // Garanta que o backend retorna {token, expiresIn, user}
     } catch (error) {
-      console.error(error);
-      setError(error.message || "Erro ao logar. Tente novamente.");
+      const message = error.response?.data?.error || "Erro ao fazer login";
+      setError(message);
     } finally {
       setLoading(false);
     }
   };
+
+  // const handleSubmit = async (e: React.FormEvent) => {
+  //   e.preventDefault();
+  //   setError(null);
+  
+  //   try {
+  //     setLoading(true);
+  //     await login(email, password);
+
+  //     setTimeout(() => {
+  //       navigate("/user");
+  //       window.dispatchEvent(new Event("storage")); // Dispara evento de storage
+  //     }, 500);      
+  
+  //   } catch (error) {
+  //     setError(error.message);
+  //     console.error("Erro completo:", error);
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // };
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-gray-50">

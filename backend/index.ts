@@ -1,3 +1,8 @@
+import dotenv from 'dotenv';
+dotenv.config();
+
+console.log(process.env.JWT_SECRET);
+
 import express from 'express';
 import authRouter from './routes/authRoutes';
 import protectRouter from './routes/protectedRoutes';
@@ -5,11 +10,11 @@ import protectedProductRouter from './routes/protectedProductRoutes';
 import productRoutes from './routes/productRoutes';
 import path from 'path';
 import cors from 'cors';
-import dotenv from 'dotenv';
+
 import { authenticate } from './middleware/protectRoutes';
 const { db } = require('./config/db'); // Importe a instância do Sequelize
 
-dotenv.config();
+
 
 const app = express();
 const PORT = process.env.PORT || 5000;

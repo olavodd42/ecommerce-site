@@ -14,6 +14,7 @@ import ProtectedRoute from './components/ProtectedRoute.tsx';
 import { AuthProvider } from './context/authProvider.tsx';
 import ProductList from './components/ProductList.tsx';
 import ProductDetail from './components/ProductDetail.tsx';
+import axios from 'axios';
 
 const App = () => {
   return (

@@ -7,7 +7,7 @@ import { useAuth } from '../context/authProvider.tsx'; // Importe o hook useAuth
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [showCategories, setShowCategories] = useState(false);
-  const { isLoggedIn, logout } = useAuth(); // Use o hook useAuth para obter o estado de autenticação
+  const { isAuthenticated, logout } = useAuth(); // Use o hook useAuth para obter o estado de autenticação
   const navigate = useNavigate();
 
   const toggleCategories = () => setShowCategories(!showCategories);
@@ -17,7 +17,7 @@ const Header = () => {
   };
 
   const testConnect = () => {
-    console.log("Estado de login:", isLoggedIn);
+    console.log("Estado de login:", isAuthenticated);
   };
 
   return (
@@ -101,7 +101,7 @@ const Header = () => {
             <ShoppingCartIcon className="w-5 h-5 cursor-pointer hover:text-gray-300" />
           </Link>
           <button onClick={testConnect}>Teste</button>
-          {isLoggedIn ? (
+          {isAuthenticated ? (
             <>
               <Link to="/user" className="hover:text-gray-300">Perfil</Link>
               <button
@@ -114,7 +114,7 @@ const Header = () => {
           ) : (
             <Link to="/login" className="hover:text-gray-300">Entrar</Link>
           )}
-          {/* <Link to={isLoggedIn ? "/user" : "/login"}>
+          {/* <Link to={isAuthenticated ? "/user" : "/login"}>
             <UserIcon className="w-5 h-5 cursor-pointer hover:text-gray-300" />
           </Link> */}
 

@@ -6,12 +6,12 @@ interface InputFieldProps {
     type: string;
     value: string | number;
     onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
-    onBlur?: () => void;
+    //onBlur?: () => void;
     required?: boolean;
     error?: string;
 }
 
-const InputField: React.FC<InputFieldProps> = React.memo(({ label, type, value, onChange, onBlur, required, error }) => (
+const InputField: React.FC<InputFieldProps> = React.memo(({ label, type, value, onChange, required, error }) => (
     <div className="mb-4 relative">
         <label htmlFor={label.toLowerCase()} className="block text-sm font-medium text-gray-700">
             {label} {required && <span className="text-red-500">*</span>}
@@ -21,7 +21,7 @@ const InputField: React.FC<InputFieldProps> = React.memo(({ label, type, value, 
             id={label.toLowerCase()}
             value={value}
             onChange={onChange}
-            onBlur={onBlur}
+            //onBlur={onBlur}
             className={`w-full border p-2 rounded-lg focus:outline-none focus:ring-2 ${
                 error ? "border-red-500" : "focus:ring-blue-400 focus:border-blue-400"
             }`}
@@ -48,17 +48,26 @@ const Sales = () => {
     const imageInputRef = useRef<HTMLInputElement | null>(null); // Referência para o input de imagem
 
     const formatCurrency = (value: string) => {
-        const numberValue = parseFloat(value.replace(',', '.'));
-        if (isNaN(numberValue)) return '';
-        return numberValue.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+        const numberValue = parseFloat(value || '0');
+        return numberValue.toLocaleString('pt-BR', { 
+            style: 'currency', 
+            currency: 'BRL',
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2
+        });
     };
 
     const handlePriceChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        setPrice(e.target.value);
+        const rawValue = e.target.value.replace(/\D/g, ''); // Remove todos os não dígitos
+        const numericValue = (Number(rawValue) / 100).toFixed(2); // Converte para decimal
+        setPrice(numericValue);
+        console.log(price)
     };
-
+    
     const handleFreightChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        setFreight(e.target.value);
+        const rawValue = e.target.value.replace(/\D/g, '');
+        const numericValue = (Number(rawValue) / 100).toFixed(2);
+        setFreight(numericValue);
     };
 
     const handleBlurFormat = (setter: React.Dispatch<React.SetStateAction<string>>) => {
@@ -87,9 +96,9 @@ const Sales = () => {
         {
             label: "Preço",
             type: "text",
-            value: price,
+            value: formatCurrency(price),
             onChange: handlePriceChange,
-            onBlur: handleBlurFormat(setPrice),
+            //onBlur: handleBlurFormat(setPrice),
             required: true,
             error: errors.price,
         },
@@ -104,9 +113,9 @@ const Sales = () => {
         {
             label: "Frete",
             type: "text",
-            value: freight,
+            value: formatCurrency(freight),
             onChange: handleFreightChange,
-            onBlur: handleBlurFormat(setFreight),
+            //onBlur: handleBlurFormat(setFreight),
             required: true,
             error: errors.freight,
         }
@@ -116,8 +125,10 @@ const Sales = () => {
         const newErrors: Record<string, string> = {};
         if (!name) newErrors.name = "O nome é obrigatório.";
         if (!category) newErrors.category = "A categoria é obrigatória.";
-        if (!price) newErrors.price = "O preço é obrigatório.";
-        if (!quantity) newErrors.quantity = "A quantidade é obrigatória.";
+        // Na função validateForm:
+        if (!price || isNaN(parseFloat(price))) newErrors.price = "Preço inválido";
+        if (!quantity || isNaN(parseInt(quantity))) newErrors.quantity = "A quantidade é obrigatória e deve ser um número válido.";
+        if (!freight || isNaN(parseFloat(freight))) newErrors.freight = "O frete é obrigatório e deve ser um número válido.";
         if (!description) newErrors.description = "A descrição é obrigatória.";
         if (!image) newErrors.image = "A imagem é obrigatória.";
 
@@ -129,30 +140,25 @@ const Sales = () => {
         if (e.target.files && e.target.files[0]) {
             const file = e.target.files[0];
             setImage(file);
-            
             setImagePreview(URL.createObjectURL(file));
         }
     };
 
-    // Função para atualizar um par de chave-valor
     const handlePairChange = (index: number, field: string, newValue: string) => {
         const updatedPairs = [...pairs];
         updatedPairs[index][field] = newValue;
         setPairs(updatedPairs);
     };
 
-    // Função para adicionar um novo par de chave-valor
     const addPair = () => {
         setPairs([...pairs, { key: '', value: '' }]);
     };
 
-    // Função para remover um par de chave-valor
     const removePair = (index: number) => {
         const updatedPairs = pairs.filter((_, i) => i !== index);
         setPairs(updatedPairs);
     };
 
-    // Função para gerar o JSON de especificações
     const generateJson = () => {
         const jsonObject = pairs.reduce((acc, { key, value }) => {
             if (key && value) {
@@ -163,7 +169,6 @@ const Sales = () => {
         return jsonObject;
     };
 
-    // Função para enviar o formulário
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setError(null);
@@ -176,9 +181,9 @@ const Sales = () => {
             const formData = new FormData();
             formData.append('name', name);
             formData.append('category', category);
-            formData.append('price', price.replace(',', '.'));
+            formData.append('price', price); // Converta para número
             formData.append('quantity', quantity);
-            formData.append('freight', freight.replace(',', '.'));
+            formData.append('freight', freight); // Converta para número
             formData.append('description', description);
             formData.append('specs', JSON.stringify(generateJson()));
             if (image) formData.append('image', image);

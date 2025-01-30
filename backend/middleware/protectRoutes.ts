@@ -1,19 +1,18 @@
-const jsonwebtoken = require("jsonwebtoken");
+const jwt = require("jsonwebtoken");
 import { Response, NextFunction } from "express";
 
 export const authenticate = (req, res, next) => {
-  const authHeader = req.headers.authorization;
-  const token = authHeader && authHeader.split(" ")[1]; // Extrai o token
-
+  const token = req.headers.authorization?.split(' ')[1];
+  
   if (!token) {
-    return res.status(401).json({ error: "Acesso não autorizado. Token ausente." });
+    return res.status(401).json({ error: "Token ausente." });
   }
 
-  try {
-    const decoded = jsonwebtoken.verify(token, process.env.JWT_SECRET || "defaultSecret"); // Decodifica o token
-    req.user = decoded; // Salva os dados do token no req.user
+  jwt.verify(token, process.env.JWT_SECRET, (err, user) => {
+    if (err) {
+      return res.status(401).json({ error: "Token inválido/expirado." });
+    }
+    req.user = user;
     next();
-  } catch (err) {
-    return res.status(401).json({ error: "Token inválido ou expirado." });
-  }
+  });
 };

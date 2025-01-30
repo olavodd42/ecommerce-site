@@ -39,7 +39,7 @@ const ProductDetail = () => {
             <h1 className="text-2xl font-bold text-center mb-6">{product.name}</h1>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                 <div>
-                    <img src={product.image} alt={product.name} className="w-full h-96 object-cover rounded-lg" />
+                    <img src={`http://localhost:4000${product.image}`} alt={product.name} className="w-full h-96 object-cover rounded-lg" />
                 </div>
                 <div className="space-y-6">
                     <div>

@@ -1,124 +1,109 @@
-import React, { createContext, useContext, useState, ReactNode, useEffect } from "react";
-import axios from "axios";
-import jwtDecode from "jwt-decode";
+import axios from 'axios';
+import React, { createContext, useContext, useEffect, useState } from 'react';
 
-interface AuthContextProps {
-  isLoggedIn: boolean;
-  login: (email: string, password: string) => Promise<void>;
+const apiUrl = "http://localhost:4000";
+
+interface AuthContextType {
+  authenticate: (data: any) => Promise<any>;
+  setLoggedUser: (data: any) => void;
+  getLoggedUser: () => any;
+  getToken: () => string | null;
   logout: () => void;
+  user: any; // Adicionado estado do usuário
+  isAuthenticated: boolean; // Adicionado verificação de autenticação
 }
 
-const AuthContext = createContext<AuthContextProps | undefined>(undefined);
+const AuthContext = createContext<AuthContextType | null>(null);
 
-export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [logoutTimer, setLogoutTimer] = useState<number | null>(null);
+export function useAuth() {
+  const context = useContext(AuthContext);
+  if (!context) throw new Error("useAuth deve ser usado dentro de um AuthProvider");
+  return context;
+}
 
-  const INACTIVITY_TIMEOUT = 30 * 60 * 1000; // 30 minutos
+export function AuthProvider({ children }: { children: React.ReactNode }) {
+  const [user, setUser] = useState<any>(null);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
 
-  const startLogoutTimer = (timeout: number) => {
-    if (logoutTimer) clearTimeout(logoutTimer);
-
-    const timer = window.setTimeout(() => {
-      logout();
-    }, timeout);
-
-    setLogoutTimer(timer);
-  };
-  
-  // Verifica o token no início
+  // Verificar autenticação ao carregar
   useEffect(() => {
-    const token = localStorage.getItem("authToken");
-    const expiration = localStorage.getItem("authTokenExpiration");
-  
-    if (token && expiration) {
-      const expirationTime = new Date(expiration).getTime();
-      const currentTime = Date.now();
-  
-      if (currentTime < expirationTime && !isLoggedIn) { // Evita re-renderizações desnecessárias
-        setIsLoggedIn(true);
-        startLogoutTimer(expirationTime - currentTime);
-      } else if (currentTime >= expirationTime) {
+    const checkAuth = () => {
+      const token = getToken();
+      const userData = getLoggedUser();
+      
+      if (token && userData && !isTokenExpired()) {
+        setIsAuthenticated(true);
+        setUser(userData);
+        axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+      } else {
+        setIsAuthenticated(false);
         logout();
       }
-    }
-  }, [isLoggedIn]); // Use `isLoggedIn` como dependência, evitando `logoutTimer`
-  
-  useEffect(() => {
-    const resetTimer = () => {
-      if (logoutTimer) clearTimeout(logoutTimer);
-      startLogoutTimer(INACTIVITY_TIMEOUT);
     };
-  
-    window.addEventListener("mousemove", resetTimer);
-    window.addEventListener("keydown", resetTimer);
-  
-    return () => {
-      window.removeEventListener("mousemove", resetTimer);
-      window.removeEventListener("keydown", resetTimer);
-      if (logoutTimer) clearTimeout(logoutTimer);
-    };
-  }, [logoutTimer, startLogoutTimer]);
-  
+    checkAuth();
+  }, []);
 
-  
-
-  const login = async (email: string, password: string) => {
-    try {
-      const response = await axios.post("http://localhost:4000/api/users/login", { email, password });
-      const { token, expiresIn } = response.data;
-
-      if (!expiresIn || typeof expiresIn !== "number") {
-        throw new Error("Token expirado ou valor inválido.");
-      }
-
-      const expirationTime = new Date(Date.now() + expiresIn * 1000).toISOString();
-
-      // Armazena o token e a data de expiração no localStorage
-      localStorage.setItem("authToken", token);
-      localStorage.setItem("authTokenExpiration", expirationTime);
-
-      setIsLoggedIn(true);
-
-      // Inicia o temporizador de logout
-      startLogoutTimer(expiresIn * 1000);
-      
-    } catch (error) {
-      console.error("Erro ao fazer login:", error);
-      throw new Error(error.response?.data?.error || "Erro ao fazer login. Tente novamente.");
-
-    }
+  // Verificar expiração do token
+  const isTokenExpired = () => {
+    const expiration = localStorage.getItem("authTokenExpiration");
+    if (!expiration) return true;
+    return new Date() > new Date(expiration);
   };
 
+  // Função de autenticação
+  const authenticate = async (data: any) => {
+    return axios.post(`${apiUrl}/api/users/login`, data);
+  };
+
+  // Salvar dados do usuário e token
+  const setLoggedUser = (data: any) => {
+    const { token, expiresIn, user } = data;
+    const expirationDate = new Date(new Date().getTime() + expiresIn * 1000);
+    
+    localStorage.setItem('authToken', token);
+    localStorage.setItem('authTokenExpiration', expirationDate.toString());
+    localStorage.setItem('user', JSON.stringify(user));
+    
+    axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+    setUser(user);
+    setIsAuthenticated(true);
+    
+
+    // Configurar logout automático
+     const time = setTimeout(() => {
+       logout();
+     }, expiresIn * 10000);
+    console.log(`teste: ${expiresIn}`);
+  };
+
+  // Logout
   const logout = () => {
     localStorage.removeItem("authToken");
     localStorage.removeItem("authTokenExpiration");
-    setIsLoggedIn(false);
-    if (logoutTimer) clearTimeout(logoutTimer);
+    localStorage.removeItem("user");
+    delete axios.defaults.headers.common['Authorization'];
+    setUser(null);
+    setIsAuthenticated(false);
   };
 
-  return (
-    <AuthContext.Provider value={{ isLoggedIn, login, logout }}>
-      {children}
-    </AuthContext.Provider>
-  );
-};
+  // Obter token
+  const getToken = () => localStorage.getItem("authToken");
 
-export const useAuth = () => {
-  const context = useContext(AuthContext);
-  if (!context) {
-    throw new Error("useAuth deve ser usado dentro de AuthProvider");
-  }
-  return context;
-};
+  // Obter dados do usuário
+  const getLoggedUser = () => {
+    const data = localStorage.getItem("user");
+    return data ? JSON.parse(data) : null;
+  };
 
-// Configure o Axios para adicionar o token automaticamente
-axios.interceptors.request.use((config) => {
-  const token = localStorage.getItem("authToken");
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
-  }
-  return config;
-}, (error) => {
-  return Promise.reject(error);
-});
+  const value = {
+    authenticate,
+    setLoggedUser,
+    getLoggedUser,
+    getToken,
+    logout,
+    user,
+    isAuthenticated,
+  };
+
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+}
