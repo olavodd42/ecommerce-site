@@ -1,76 +1,79 @@
-import { DataTypes } from 'sequelize';
-const { db } = require('../config/db');
-import User from './userModel'; // Importe o modelo User
+import { DataTypes, Model } from 'sequelize';
+import db from '../config/db';
 
-const Product = db.define('product', {
-  id: {
-    type: DataTypes.INTEGER,
-    autoIncrement: true,
-    allowNull: false,
-    primaryKey: true,
-  },
-  name: {
-    type: DataTypes.STRING,
-    allowNull: false,
-  },
-  user_id: {
-    type: DataTypes.UUID,
-    allowNull: false,
-    references: {
-      model: 'users', // Nome da tabela referenciada
-      key: 'id',      // Coluna referenciada
+class Product extends Model {
+  public id!: number;
+  public name!: string;
+  public user_id!: string;
+  public category!: string;
+  public price!: number;
+  public quantity!: number;
+  public sales!: number;
+  public freight!: number;
+  public description!: string;
+  public specs!: Record<string, any>;
+  public image!: string;
+
+  public readonly createdAt!: Date;
+  public readonly updatedAt!: Date;
+}
+
+Product.init(
+  {
+    id: {
+      type: DataTypes.INTEGER,
+      autoIncrement: true,
+      allowNull: false,
+      primaryKey: true,
+    },
+    name: {
+      type: DataTypes.STRING,
+      allowNull: false,
+    },
+    user_id: {
+      type: DataTypes.UUID,
+      allowNull: false,
+    },
+    category: {
+      type: DataTypes.STRING,
+      allowNull: false,
+    },
+    price: {
+      type: DataTypes.DOUBLE,
+      allowNull: false,
+    },
+    quantity: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+    },
+    sales: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+      defaultValue: 0,
+    },
+    freight: {
+      type: DataTypes.DOUBLE,
+      allowNull: false,
+    },
+    description: {
+      type: DataTypes.TEXT,
+      allowNull: false,
+    },
+    specs: {
+      type: DataTypes.JSON,
+      allowNull: false,
+    },
+    image: {
+      type: DataTypes.STRING,
+      allowNull: false,
     },
   },
-  category: {
-    type: DataTypes.STRING,
-    allowNull: false,
-  },
-  price: {
-    type: DataTypes.DOUBLE,
-    allowNull: false,
-  },
-  quantity: {
-    type: DataTypes.INTEGER,
-    allowNull: false,
-  },
-  sales: {
-    type: DataTypes.INTEGER,
-    allowNull: false,
-    defaultValue: 0,
-  },
-  freight: {
-    type: DataTypes.DOUBLE,
-    allowNull: false,
-  },
-  description: DataTypes.TEXT,
-  specs: DataTypes.JSON,
-  image: {
-    type: DataTypes.STRING,
-    allowNull: false,
-  },
- 
-});
-
-Product.associate = (models) => {
-  // Relação N:1 com User (dono do produto)
-  Product.belongsTo(models.User, {
-    foreignKey: 'user_id',
-    as: 'owner'
-  });
-
-  // Relação N:N com User (wishlist)
-  Product.belongsToMany(models.User, {
-    through: 'UserWishlist',
-    as: 'wishlistedBy',
-    foreignKey: 'productId',
-    otherKey: 'userId'
-  });
-  
-};
-
-Product.init({}, {
-  sequelize: db,
-  tableName: 'products' // Nome da tabela explícito
-});
+  {
+    sequelize: db,
+    modelName: 'Product',
+    tableName: 'products',
+    timestamps: true,
+  }
+);
 
 export default Product;

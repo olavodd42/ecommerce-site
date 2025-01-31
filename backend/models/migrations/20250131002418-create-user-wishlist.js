@@ -1,24 +1,27 @@
+'use strict';
+
 module.exports = {
   up: async (queryInterface, Sequelize) => {
-    await queryInterface.createTable('UserWishlist', {
+    await queryInterface.createTable('user_wishlist', { // Nome da tabela padronizado
       userId: {
         type: Sequelize.UUID,
-        defaultValue: Sequelize.UUIDV4,
         allowNull: false,
         references: {
-          model: 'users', // Deve ser minúsculo
+          model: 'users', // Nome correto da tabela users
           key: 'id'
         },
-        onDelete: 'CASCADE'
+        onDelete: 'CASCADE',
+        primaryKey: true, // Definindo como parte da chave primária
       },
       productId: {
         type: Sequelize.INTEGER,
         allowNull: false,
         references: {
-          model: 'products', // Deve ser minúsculo
+          model: 'products', // Nome correto da tabela products
           key: 'id'
         },
-        onDelete: 'CASCADE'
+        onDelete: 'CASCADE',
+        primaryKey: true, // Definindo como parte da chave primária
       },
       createdAt: {
         type: Sequelize.DATE,
@@ -32,8 +35,8 @@ module.exports = {
       }
     });
 
-    // Adicione índice único para evitar duplicatas
-    await queryInterface.addConstraint('UserWishlist', {
+    // Adicionar índice único para evitar duplicatas (caso primaryKey não esteja suficiente)
+    await queryInterface.addConstraint('user_wishlist', {
       fields: ['userId', 'productId'],
       type: 'unique',
       name: 'unique_wishlist_entry'
@@ -41,6 +44,6 @@ module.exports = {
   },
 
   down: async (queryInterface) => {
-    await queryInterface.dropTable('UserWishlist');
+    await queryInterface.dropTable('user_wishlist');
   }
 };

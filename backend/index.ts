@@ -12,7 +12,8 @@ import path from 'path';
 import cors from 'cors';
 
 import { authenticate } from './middleware/protectRoutes';
-const { db } = require('./config/db'); // Importe a instância do Sequelize
+import db from './config/db';
+import './config/associations'; 
 
 
 
@@ -28,12 +29,9 @@ app.use('/api/users', authenticate, protectRouter);
 app.use('/api/products', productRoutes); // Rota pública para obter produtos
 app.use('/api/products', authenticate, protectedProductRouter); // Rotas protegidas para criar, atualizar e deletar produtos
 
-// Sincronize os modelos com o banco de dados
-db.sync({ alter: true }).then(() => {
-  console.log('Tabelas sincronizadas com sucesso!');
-  app.listen(PORT, () => {
-    console.log(`Server is running on http://localhost:${PORT}/`);
-  });
-}).catch((error) => {
-  console.error('Erro ao sincronizar com o banco de dados:', error);
+db.sync({ force: false }) // Garante que as tabelas existam
+  .then(() => console.log('Database connected!'))
+  .catch((err) => console.error('Error connecting to database:', err));
+app.listen(PORT, () => {
+     console.log(`Server is running on http://localhost:${PORT}/`);
 });

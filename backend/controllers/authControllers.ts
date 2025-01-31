@@ -4,6 +4,7 @@ import Joi from 'joi';
 import User from '../models/userModel';
 import dotenv from 'dotenv';
 import Product from '../models/productModel';
+import UserWishlist from '../models/UserWishlist'
 dotenv.config({ path: require('path').resolve(__dirname, '../.env') });
 
 // Registro de novo usuário
@@ -37,8 +38,9 @@ exports.register = async (req, res) => {
 
   try {
     const { email, name, password, phone } = req.body;
+    const existingUser = await User.findOne({ where: { email } }) as User | null;
 
-    const existingUser = await User.findOne({ where: { email } });
+    //const existingUser = await User.findOne({ where: { email } });
     if (existingUser) {
       return res.status(400).json({ error: "E-mail já cadastrado." });
     }
@@ -74,7 +76,7 @@ exports.login = async (req, res) => {
   }
 
   try {
-    const user = await User.findOne({ where: { email } });
+    const user = await User.findOne({ where: { email } }) as User | null;
     if (!user) {
       return res.status(404).json({ error: "Usuário não encontrado." });
     }
@@ -119,7 +121,7 @@ exports.login = async (req, res) => {
 // Obter usuário atual
 exports.getUser = async (req, res) => {
   try {
-    const user = await User.findByPk(req.user?.id);
+    const user = await User.findByPk(req.user?.id) as User | null;
     if (!user) {
       return res.status(404).json({ error: "Usuário não encontrado." });
     }
@@ -143,7 +145,8 @@ exports.getAllUsers = async (req, res) => {
 exports.updateUser = async (req, res) => {
   try {
     const { email, name, phone, currentPassword, newPassword } = req.body;
-    const user = await User.findByPk(req.user?.id);
+    const user = await User.findByPk(req.user?.id) as User | null;
+
     if (!user) {
       return res.status(404).json({ error: "Usuário não encontrado." });
     }
@@ -175,7 +178,8 @@ exports.updateUser = async (req, res) => {
 // Deletar usuário
 exports.deleteUser = async (req, res) => {
   try {
-    const user = await User.findByPk(req.user?.id);
+    const user = await User.findByPk(req.user?.id) as User | null;
+
     if (!user) {
       return res.status(404).json({ error: "Usuário não encontrado." });
     }
@@ -188,7 +192,11 @@ exports.deleteUser = async (req, res) => {
 
 exports.addFav = async (req, res) => {
   try {
-    const user = await User.findByPk(req.user.id, {
+    //const user = await User.findByPk(req.user?.id) 
+    const userId = req.user.id;
+    const productId = req.params.productId;
+
+    const user = await User.findByPk(userId, {
       include: [{
         model: Product,
         as: 'wishlist',
@@ -198,31 +206,22 @@ exports.addFav = async (req, res) => {
 
     if (!user) return res.status(404).json({ error: 'Usuário não encontrado' });
     
-    const product = await Product.findByPk(req.params.productId);
+    const product = await Product.findByPk(productId) as Product | null;
     if (!product) return res.status(404).json({ error: 'Produto não encontrado' });
 
+    const isInWishlist = await UserWishlist.findOne({ where: { userId, productId } });
+
     // Método correto do Sequelize para verificar associação
-    const isInWishlist = await user.hasWishlist(product);
+    //const isInWishlist = UserWishlist.som((p) => p.id === productId);
     if (isInWishlist) {
       return res.status(400).json({ error: 'Produto já está na lista de desejos' });
     }
 
     // Método correto para adicionar associação
-    await user.addWishlist(product);
+    await UserWishlist.create({ userId, productId });
     
     // Recarrega as associações
-    const updatedUser = await User.findByPk(user.id, {
-      include: [{
-        model: Product,
-        as: 'wishlist',
-        through: { attributes: [] }
-      }]
-    });
-
-    res.status(200).json({
-      message: 'Produto adicionado aos favoritos',
-      wishlist: updatedUser.wishlist
-    });
+  
   } catch (error) {
     res.status(500).json({
       error: (error as Error).message,

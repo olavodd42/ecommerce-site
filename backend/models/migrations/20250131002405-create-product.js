@@ -2,7 +2,7 @@
 
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
-  up: async (queryInterface, Sequelize) => {
+  async up(queryInterface, Sequelize) {
     await queryInterface.createTable('products', {
       id: {
         type: Sequelize.INTEGER,
@@ -47,22 +47,30 @@ module.exports = {
       },
       description: {
         type: Sequelize.TEXT,
-        allowNull: false,
+        allowNull: true, // Agora pode ser opcional
       },
       specs: {
         type: Sequelize.JSON,
-        allowNull: false,
+        allowNull: true, // Agora pode ser opcional
       },
       image: {
         type: Sequelize.STRING,
         allowNull: false,
-      }
+      },
+      createdAt: {
+        type: Sequelize.DATE,
+        allowNull: false,
+        defaultValue: Sequelize.literal('CURRENT_TIMESTAMP'),
+      },
+      updatedAt: {
+        type: Sequelize.DATE,
+        allowNull: false,
+        defaultValue: Sequelize.literal('CURRENT_TIMESTAMP'),
+      },
     });
   },
-    
 
-  down: async (queryInterface, Sequelize) => {
-    // Remover a coluna ao reverter a migration
+  async down(queryInterface) {
     await queryInterface.dropTable('products');
-  }
+  },
 };

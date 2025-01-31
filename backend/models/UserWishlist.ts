@@ -1,39 +1,53 @@
-module.exports = {
-    up: async (queryInterface, Sequelize) => {
-      await queryInterface.createTable('UserWishlist', {
-        userId: {
-          type: Sequelize.UUID,
-          allowNull: false,
-          references: {
-            model: 'users', // Nome da tabela users
-            key: 'id'
-          },
-          onDelete: 'CASCADE'
-        },
-        productId: {
-          type: Sequelize.INTEGER,
-          allowNull: false,
-          references: {
-            model: 'products', // Nome da tabela products
-            key: 'id'
-          },
-          onDelete: 'CASCADE'
-        },
-        createdAt: {
-          type: Sequelize.DATE,
-          allowNull: false,
-          defaultValue: Sequelize.literal('CURRENT_TIMESTAMP')
-        },
-        updatedAt: {
-          type: Sequelize.DATE,
-          allowNull: false,
-          defaultValue: Sequelize.literal('CURRENT_TIMESTAMP')
-        }
-      });
+import { DataTypes, Model } from 'sequelize';
+import db from '../config/db';
+import User from './userModel';
+import Product from './productModel';
+
+class UserWishlist extends Model {
+  public userId!: string;
+  public productId!: number;
+  public readonly createdAt!: Date;
+  public readonly updatedAt!: Date;
+}
+
+UserWishlist.init(
+  {
+    userId: {
+      type: DataTypes.UUID,
+      allowNull: false,
+      references: {
+        model: User,
+        key: 'id',
+      },
+      onDelete: 'CASCADE',
+      primaryKey: true,
     },
-  
-    down: async (queryInterface, Sequelize) => {
-      await queryInterface.dropTable('UserWishlist');
-    }
-  };
-  
+    productId: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+      references: {
+        model: Product,
+        key: 'id',
+      },
+      onDelete: 'CASCADE',
+      primaryKey: true,
+    },
+    createdAt: {
+      type: DataTypes.DATE,
+      allowNull: false,
+      defaultValue: DataTypes.NOW,
+    },
+    updatedAt: {
+      type: DataTypes.DATE,
+      allowNull: false,
+      defaultValue: DataTypes.NOW,
+    },
+  },
+  {
+    sequelize: db,
+    tableName: 'user_wishlist',
+    timestamps: true,
+  }
+);
+
+export default UserWishlist;

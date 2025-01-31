@@ -1,44 +1,49 @@
-import { Sequelize, DataTypes } from 'sequelize';
-const { db } = require('../config/db.ts');
-import Product from './productModel'; // Importe o modelo Product
+import { DataTypes, Model } from 'sequelize';
+import db from '../config/db';
 
-const User = db.define('user', {
-  id: {
-    type: DataTypes.UUID,
-    defaultValue: DataTypes.UUIDV4,
-    allowNull: false,
-    primaryKey: true,
-  },
-  email: {
-    type: DataTypes.STRING,
-    unique: true,
-    allowNull: false,
-  },
-  name: DataTypes.STRING,
-  password: {
-    type: DataTypes.STRING,
-    allowNull: false,
-  },
-  phone: {
-    type: DataTypes.STRING,
-    allowNull: false,
-  },
-});
+class User extends Model {
+  public id!: string;
+  public email!: string;
+  public name!: string;
+  public password!: string;
+  public phone!: string;
 
-User.associate = (models) => {
-  // Relação 1:N com Products (produtos do usuário)
-  User.hasMany(models.Product, {
-    foreignKey: 'user_id',
-    as: 'products'
-  });
+  public readonly createdAt!: Date;
+  public readonly updatedAt!: Date;
+}
 
-  // Relação N:N com Products (wishlist)
-  User.belongsToMany(models.Product, {
-    through: 'UserWishlist',
-    as: 'wishlist',
-    foreignKey: 'userId',
-    otherKey: 'productId'
-  });
-};
+User.init(
+  {
+    id: {
+      type: DataTypes.UUID,
+      defaultValue: DataTypes.UUIDV4,
+      allowNull: false,
+      primaryKey: true,
+    },
+    email: {
+      type: DataTypes.STRING,
+      unique: true,
+      allowNull: false,
+    },
+    name: {
+      type: DataTypes.STRING,
+      allowNull: false,
+    },
+    password: {
+      type: DataTypes.STRING,
+      allowNull: false,
+    },
+    phone: {
+      type: DataTypes.STRING,
+      allowNull: false,
+    },
+  },
+  {
+    sequelize: db,
+    modelName: 'User',
+    tableName: 'users',
+    timestamps: true, // Habilita `createdAt` e `updatedAt`
+  }
+);
 
-export default User; // Use exportação padrão
+export default User;
