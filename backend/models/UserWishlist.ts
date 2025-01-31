@@ -6,6 +6,7 @@ import Product from './productModel';
 class UserWishlist extends Model {
   public userId!: string;
   public productId!: number;
+  
   public readonly createdAt!: Date;
   public readonly updatedAt!: Date;
 }
