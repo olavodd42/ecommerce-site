@@ -96,7 +96,7 @@ exports.updateProduct = async (req, res) => {
 
 exports.deleteProduct = async (req, res) => {
   try {
-    const product = await Product.findByPk(req.product.id);
+    const product = await Product.findByPk(req.params.id);
     if (!product) {
       return res.status(404).json({ error: 'Produto não encontrado' });
     }

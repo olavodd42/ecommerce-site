@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import axios from 'axios';
-import { faPen } from '@fortawesome/free-solid-svg-icons';
+import { faPen, faTrashCan } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 
 // Define the Product interface
@@ -24,6 +24,7 @@ const MyProducts = () => {
     const [products, setProducts] = useState<Product[]>([]); // Apply the Product type
     const [error, setError] = useState<string | null>(null);
     const [isTabOpen, setIsTabOpen] = useState<boolean>(false);
+    const [productToDelete, setProductToDelete] = useState<string | null>(null);
 
     useEffect(() => {
         const fetchProducts = async () => {
@@ -46,6 +47,19 @@ const MyProducts = () => {
         fetchProducts();
     }, []);
 
+    const removeItem = async () => {
+        if (!productToDelete) return;
+        
+        try {
+            await axios.delete(`http://localhost:4000/api/products/${productToDelete}`);
+            setProducts(products.filter((product) => product.id !== productToDelete));
+            setProductToDelete(null);
+        } catch (error) {
+            console.error(error);
+            setError(error instanceof Error ? error.message : 'Erro desconhecido');
+        }
+    };
+
     if (error) {
         return <div className="text-center pt-28 text-red-500">{error}</div>;
     }
@@ -63,6 +77,12 @@ const MyProducts = () => {
                                     <FontAwesomeIcon icon={faPen} />
                                 </button>
                             </Link>
+                            <button 
+                                className="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 ml-2"
+                                onClick={() => setProductToDelete(product.id)}
+                            >
+                                <FontAwesomeIcon icon={faTrashCan} />
+                            </button>
                         </div>
                         <img 
                             src={`http://localhost:4000${product.image}`} 
@@ -87,6 +107,28 @@ const MyProducts = () => {
                         
                     </div>
                 ))}
+                {productToDelete && (
+                    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+                        <div className="bg-white p-6 rounded-lg">
+                            <h3 className="text-lg font-bold mb-4">Confirmar exclusão</h3>
+                            <p>Tem certeza que deseja excluir este produto permanentemente?</p>
+                            <div className="flex justify-end gap-4 mt-6">
+                                <button
+                                    onClick={() => setProductToDelete(null)}
+                                className="px-4 py-2 text-gray-600 hover:text-gray-800"
+                                >
+                                    Cancelar
+                                </button>
+                                <button
+                                    onClick={removeItem}
+                                    className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600"
+                                >
+                                    Confirmar Exclusão
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                )}
             </div>
         </div>
     );

@@ -1,9 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faStar } from '@fortawesome/free-solid-svg-icons';
 
 const ProductDetail = () => {
-    const { id } = useParams(); // Extrai o ID da URL
-    const [product, setProduct] = useState(null);
+    const { id } = useParams<{ id: string }>(); // Tipagem explícita
+    const [product, setProduct] = useState<Product | null>(null);
+    //const [product, setProduct] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
 
@@ -26,6 +29,36 @@ const ProductDetail = () => {
         fetchProduct();
     }, [id]);
 
+    const addFav = async (productId: string) => {
+        try {
+          const token = localStorage.getItem('authToken');
+          const user = JSON.parse(localStorage.getItem('user') || '{}');
+          
+          if (!user?.id || !token) {
+            throw new Error('Você precisa estar logado');
+          }
+      
+          const response = await fetch(
+            `http://localhost:4000/api/users/${user.id}/wishlist/${productId}`,
+            {
+              method: 'PATCH',
+              headers: {
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${token}`,
+              },
+            }
+          );
+      
+          const data = await response.json();
+          
+          if (!response.ok) throw new Error(data.error || 'Erro na requisição');
+          
+          alert('Produto adicionado aos favoritos!');
+        } catch (error) {
+          alert(error.message);
+        }
+      };
+
     if (loading) {
         return <div className="text-center pt-28">Carregando...</div>;
     }
@@ -42,6 +75,12 @@ const ProductDetail = () => {
                     <img src={`http://localhost:4000${product.image}`} alt={product.name} className="w-full h-96 object-cover rounded-lg" />
                 </div>
                 <div className="space-y-6">
+                    <div>
+                        <button className="bg-yellow-500 text-white px-4 py-2 rounded-lg" onClick={() => addFav(product.id)}>
+                            <FontAwesomeIcon icon={faStar} className="mr-2" />
+                            Adicionar aos Favoritos
+                        </button>
+                    </div>
                     <div>
                         <h2 className="text-xl font-bold">Categoria</h2>
                         <p className="text-gray-700">{product.category}</p>

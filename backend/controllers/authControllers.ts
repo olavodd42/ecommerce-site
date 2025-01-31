@@ -3,6 +3,7 @@ import jwt from 'jsonwebtoken';
 import Joi from 'joi';
 import User from '../models/userModel';
 import dotenv from 'dotenv';
+import Product from '../models/productModel';
 dotenv.config({ path: require('path').resolve(__dirname, '../.env') });
 
 // Registro de novo usuário
@@ -43,8 +44,13 @@ exports.register = async (req, res) => {
     }
 
     const hashedPassword = bcrypt.hashSync(password, 10);
-    const user = await User.create({ email, name, password: hashedPassword, phone });
-
+    const user = await User.create({
+      email,
+      name,
+      password: hashedPassword,
+      phone
+    });
+    
     res.status(201).json({
       message: "Usuário registrado com sucesso!",
       user: {
@@ -177,5 +183,50 @@ exports.deleteUser = async (req, res) => {
     res.status(200).json({ message: "Usuário deletado com sucesso." });
   } catch (error) {
     res.status(500).json({ error: (error as Error).message });
+  }
+};
+
+exports.addFav = async (req, res) => {
+  try {
+    const user = await User.findByPk(req.user.id, {
+      include: [{
+        model: Product,
+        as: 'wishlist',
+        through: { attributes: [] }
+      }]
+    });
+
+    if (!user) return res.status(404).json({ error: 'Usuário não encontrado' });
+    
+    const product = await Product.findByPk(req.params.productId);
+    if (!product) return res.status(404).json({ error: 'Produto não encontrado' });
+
+    // Método correto do Sequelize para verificar associação
+    const isInWishlist = await user.hasWishlist(product);
+    if (isInWishlist) {
+      return res.status(400).json({ error: 'Produto já está na lista de desejos' });
+    }
+
+    // Método correto para adicionar associação
+    await user.addWishlist(product);
+    
+    // Recarrega as associações
+    const updatedUser = await User.findByPk(user.id, {
+      include: [{
+        model: Product,
+        as: 'wishlist',
+        through: { attributes: [] }
+      }]
+    });
+
+    res.status(200).json({
+      message: 'Produto adicionado aos favoritos',
+      wishlist: updatedUser.wishlist
+    });
+  } catch (error) {
+    res.status(500).json({
+      error: (error as Error).message,
+      stack: process.env.NODE_ENV === 'development' ? (error as Error).stack : undefined
+    });
   }
 };

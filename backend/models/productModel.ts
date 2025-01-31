@@ -48,10 +48,29 @@ const Product = db.define('product', {
     type: DataTypes.STRING,
     allowNull: false,
   },
-  featured: {
-    type: DataTypes.BOOLEAN,
-    defaultValue: false, // Por padrão, os produtos não são destacados
-  },  
+ 
+});
+
+Product.associate = (models) => {
+  // Relação N:1 com User (dono do produto)
+  Product.belongsTo(models.User, {
+    foreignKey: 'user_id',
+    as: 'owner'
+  });
+
+  // Relação N:N com User (wishlist)
+  Product.belongsToMany(models.User, {
+    through: 'UserWishlist',
+    as: 'wishlistedBy',
+    foreignKey: 'productId',
+    otherKey: 'userId'
+  });
+  
+};
+
+Product.init({}, {
+  sequelize: db,
+  tableName: 'products' // Nome da tabela explícito
 });
 
 export default Product;

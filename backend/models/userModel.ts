@@ -1,5 +1,5 @@
 import { Sequelize, DataTypes } from 'sequelize';
-const {db} = require('../config/db.ts');
+const { db } = require('../config/db.ts');
 import Product from './productModel'; // Importe o modelo Product
 
 const User = db.define('user', {
@@ -25,7 +25,20 @@ const User = db.define('user', {
   },
 });
 
-User.hasMany(Product, { foreignKey: 'user_id' });
-Product.belongsTo(User, { foreignKey: 'user_id' });
+User.associate = (models) => {
+  // Relação 1:N com Products (produtos do usuário)
+  User.hasMany(models.Product, {
+    foreignKey: 'user_id',
+    as: 'products'
+  });
+
+  // Relação N:N com Products (wishlist)
+  User.belongsToMany(models.Product, {
+    through: 'UserWishlist',
+    as: 'wishlist',
+    foreignKey: 'userId',
+    otherKey: 'productId'
+  });
+};
 
 export default User; // Use exportação padrão
