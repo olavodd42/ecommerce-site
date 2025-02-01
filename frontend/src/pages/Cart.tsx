@@ -3,7 +3,38 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faStar, faTrash } from '@fortawesome/free-solid-svg-icons';
 
 const Cart = () => {
-  const [cart, setCart] = useState(null);
+  interface CartItem {
+    cartId: string;
+    createdAt: string;
+    id: string;
+    product: { // ⚠️ Corrigido de Product para product
+      category: string;
+      createdAt: string;
+      description: string;
+      freight: number;
+      id: number;
+      image: string;
+      name: string;
+      price: number;
+      quantity: number;
+      sales: number;
+      specs: JSON;
+      updatedAt: string;
+      user_id: string;
+    };
+    productId: number;
+    quantity: number;
+  }
+
+  interface Cart {
+    createdAt: string;
+    id: string;
+    items: CartItem[];
+    updatedAt: string;
+    userId: string;
+  }
+
+  const [cart, setCart] = useState<Cart | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
@@ -20,7 +51,7 @@ const Cart = () => {
         const response = await fetch('http://localhost:4000/api/cart', {
           headers: {
             Authorization: `Bearer ${token}`,
-            'user': parsedUser.id
+            'user': parsedUser.id // Incluindo o ID do usuário no cabeçalho
           }
         });
 
@@ -54,12 +85,12 @@ const Cart = () => {
       if (!response.ok) throw new Error('Erro ao atualizar quantidade');
       
       // Atualizar estado local
-      setCart(prev => ({
+      setCart(prev => prev ? ({
         ...prev,
-        CartItems: prev.CartItems.map(item => 
+        items: prev.items.map(item => 
           item.id === itemId ? { ...item, quantity: newQuantity } : item
         )
-      }));
+      }) : prev);
     } catch (error) {
       alert(error.message);
     }
@@ -77,10 +108,10 @@ const Cart = () => {
       
       if (!response.ok) throw new Error('Erro ao remover item');
       
-      setCart(prev => ({
+      setCart(prev => prev ? ({
         ...prev,
-        CartItems: prev.CartItems.filter(item => item.id !== itemId)
-      }));
+        items: prev.items.filter(item => item.id !== itemId)
+      }) : prev);
     } catch (error) {
       alert(error.message);
     }
@@ -98,14 +129,16 @@ const Cart = () => {
 
         <div className="mt-6 sm:mt-8 md:gap-6 lg:flex lg:items-start xl:gap-8">
           <div className="mx-auto w-full flex-none lg:max-w-2xl xl:max-w-4xl">
-            {cart?.CartItems?.map(item => (
+            {cart?.items?.map(item => (
               <div key={item.id} className="rounded-lg border border-gray-200 bg-white p-4 shadow-sm md:p-6 mb-4">
                 <div className="space-y-4 md:flex md:items-center md:justify-between md:gap-6 md:space-y-0">
-                  <img 
-                    src={`http://localhost:4000${item.Product.image}`} 
-                    alt={item.Product.name} 
-                    className="h-20 w-20 object-contain"
-                  />
+                <img 
+                  src={item.product?.image ? `http://localhost:4000${item.product.image}` : '/placeholder.png'}
+                  alt={item.product?.name || 'Produto sem nome'}
+                  className="h-20 w-20 object-contain"
+                />
+
+
 
                   <div className="flex items-center justify-between md:order-3 md:justify-end">
                     <div className="flex items-center">
@@ -133,14 +166,14 @@ const Cart = () => {
                         {new Intl.NumberFormat('pt-BR', {
                           style: 'currency',
                           currency: 'BRL',
-                        }).format(item.Product.price * item.quantity)}
+                        }).format(item.product.price * item.quantity)}
                       </p>
                     </div>
                   </div>
 
                   <div className="w-full min-w-0 flex-1 space-y-4 md:max-w-md">
                     <h3 className="text-base font-medium text-gray-900">
-                      {item.Product.name}
+                      {item.product.name}
                     </h3>
                     
                     <div className="flex items-center gap-4">
@@ -171,8 +204,8 @@ const Cart = () => {
                       style: 'currency',
                       currency: 'BRL',
                     }).format(
-                      cart?.CartItems?.reduce((total, item) => 
-                        total + (item.Product.price * item.quantity), 0
+                      cart?.items?.reduce((total, item) => 
+                        total + (item.product.price * item.quantity), 0
                       ) || 0
                     )}
                   </dd>
