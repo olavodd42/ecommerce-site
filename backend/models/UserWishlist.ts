@@ -9,6 +9,11 @@ class UserWishlist extends Model {
   
   public readonly createdAt!: Date;
   public readonly updatedAt!: Date;
+
+  static associate(models: any) {
+    UserWishlist.belongsTo(models.User, { foreignKey: 'userId' });
+    UserWishlist.belongsTo(models.Product, { foreignKey: 'productId' });
+  }
 }
 
 UserWishlist.init(

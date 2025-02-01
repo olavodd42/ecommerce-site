@@ -10,6 +10,19 @@ class User extends Model {
 
   public readonly createdAt!: Date;
   public readonly updatedAt!: Date;
+
+  static associate(models: any) {
+    User.hasOne(models.Cart, { 
+      foreignKey: 'userId',
+      as: 'cart' // Adicione um alias para a associação
+    });
+    User.belongsToMany(models.Product, {
+      through: models.UserWishlist,
+      as: 'wishlist',
+      foreignKey: 'userId',
+      otherKey: 'productId'
+    });
+  }
 }
 
 User.init(

@@ -8,12 +8,13 @@ import authRouter from './routes/authRoutes';
 import protectRouter from './routes/protectedRoutes';
 import protectedProductRouter from './routes/protectedProductRoutes';
 import productRoutes from './routes/productRoutes';
+import cartRouter from './routes/cartRoutes';
 import path from 'path';
 import cors from 'cors';
 
 import { authenticate } from './middleware/protectRoutes';
 import db from './config/db';
-import './config/associations'; 
+import './models/index'; 
 
 
 
@@ -28,8 +29,9 @@ app.use('/api/users', authRouter);
 app.use('/api/users', authenticate, protectRouter);
 app.use('/api/products', productRoutes); // Rota pública para obter produtos
 app.use('/api/products', authenticate, protectedProductRouter); // Rotas protegidas para criar, atualizar e deletar produtos
+app.use('/api/cart', authenticate, cartRouter);
 
-db.sync({ force: false }) // Garante que as tabelas existam
+db.sync({ force: false, alter: true }) // Garante que as tabelas existam
   .then(() => console.log('Database connected!'))
   .catch((err) => console.error('Error connecting to database:', err));
 app.listen(PORT, () => {

@@ -1,5 +1,6 @@
 import { DataTypes, Model } from 'sequelize';
 import db from '../config/db';
+import { Cart } from './cartModel';
 
 class Product extends Model {
   public id!: number;
@@ -16,6 +17,11 @@ class Product extends Model {
 
   public readonly createdAt!: Date;
   public readonly updatedAt!: Date;
+
+  static associate(models: any) {
+    Product.hasMany(models.CartItem, { foreignKey: 'productId', as: 'cartItems' });
+  }
+  
 }
 
 Product.init(
