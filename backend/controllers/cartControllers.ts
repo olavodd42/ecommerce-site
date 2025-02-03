@@ -32,10 +32,10 @@ const getCart = async (req, res) => {
       
 
       if (!cart) {
-        return res.json({ CartItems: [] });
+        return res.status(404).json({ CartItems: [] });
       }
   
-      res.json(cart);
+      res.status(200).json(cart);
     } catch (error) {
       console.error("Erro ao obter carrinho:", error);
       res.status(500).send((error as Error).message);

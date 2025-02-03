@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faStar, faTrash } from '@fortawesome/free-solid-svg-icons';
+import { useNavigate } from 'react-router-dom';
 
 const Cart = () => {
   interface CartItem {
@@ -37,6 +38,13 @@ const Cart = () => {
   const [cart, setCart] = useState<Cart | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (!localStorage.getItem('authToken')) {
+      navigate('/login');
+    }
+  }, [navigate]);
 
   useEffect(() => {
     const fetchCart = async () => {
@@ -212,7 +220,8 @@ const Cart = () => {
                 </dl>
               </div>
 
-              <button className="flex w-full items-center justify-center rounded-lg bg-blue-600 px-5 py-2.5 text-sm font-medium text-white hover:bg-blue-700">
+              <button onClick={() => navigate('/checkout', { state: { fromCart: true } })}
+              className="flex w-full items-center justify-center rounded-lg bg-blue-600 px-5 py-2.5 text-sm font-medium text-white hover:bg-blue-700">
                 Finalizar Compra
               </button>
             </div>

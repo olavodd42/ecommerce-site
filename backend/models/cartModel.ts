@@ -5,6 +5,9 @@ class Cart extends Model {
   public id!: string;
   public userId!: string;
   
+  // 🔥 Adicionar esta linha para o TypeScript reconhecer a relação
+  public items?: CartItem[];
+
   public readonly createdAt!: Date;
   public readonly updatedAt!: Date;
 
@@ -20,6 +23,7 @@ class Cart extends Model {
     });
   }
 }
+
 
 Cart.init(
   {
@@ -46,12 +50,17 @@ Cart.init(
   }
 );
 
+import Product from './productModel';
+
 class CartItem extends Model {
   public id!: string;
   public cartId!: string;
   public productId!: number;
   public quantity!: number;
-  
+
+  // 🔥 Adicionar esta linha para TypeScript reconhecer a relação
+  public product?: Product;
+
   public readonly createdAt!: Date;
   public readonly updatedAt!: Date;
 
@@ -67,6 +76,7 @@ class CartItem extends Model {
     });
   }
 }
+
 
 CartItem.init(
   {

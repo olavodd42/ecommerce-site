@@ -9,6 +9,7 @@ import protectRouter from './routes/protectedRoutes';
 import protectedProductRouter from './routes/protectedProductRoutes';
 import productRoutes from './routes/productRoutes';
 import cartRouter from './routes/cartRoutes';
+import orderRouter from './routes/orderRoutes';
 import path from 'path';
 import cors from 'cors';
 
@@ -30,6 +31,7 @@ app.use('/api/users', authenticate, protectRouter);
 app.use('/api/products', productRoutes); // Rota pública para obter produtos
 app.use('/api/products', authenticate, protectedProductRouter); // Rotas protegidas para criar, atualizar e deletar produtos
 app.use('/api/cart', authenticate, cartRouter);
+app.use('/api/checkout', authenticate, orderRouter);
 
 db.sync({ force: false, alter: true }) // Garante que as tabelas existam
   .then(() => console.log('Database connected!'))

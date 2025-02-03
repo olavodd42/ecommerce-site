@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faStar, faShoppingCart, faBagShopping } from '@fortawesome/free-solid-svg-icons';
+import { useNavigate } from 'react-router-dom';
 
 const ProductDetail = () => {
     const { id } = useParams<{ id: string }>();
@@ -9,6 +10,7 @@ const ProductDetail = () => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [quantity, setQuantity] = useState(1);
+    const navigate = useNavigate();
 
     useEffect(() => {
         const fetchProduct = async () => {
@@ -85,6 +87,7 @@ const ProductDetail = () => {
     const buyNow = () => {
         // Lógica para compra imediata
         alert(`Redirecionando para checkout com ${quantity} unidade(s) de ${product.name}!`);
+        navigate('/checkout', { state: { fromProduct: true, productID: product.id, quantity } });
     };
 
     if (loading) {

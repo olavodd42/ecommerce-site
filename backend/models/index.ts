@@ -3,9 +3,10 @@ import User from './userModel';
 import Product from './productModel';
 import { Cart, CartItem } from './cartModel';
 import UserWishlist from './UserWishlist';
+import { Order, OrderItem } from './orderModel';
 
 // 📌 Garante que os modelos são armazenados corretamente antes de chamar associate()
-const models = { User, Product, Cart, CartItem, UserWishlist };
+const models = { User, Product, Cart, CartItem, UserWishlist, Order, OrderItem };
 
 // 📌 Agora chamamos associate() apenas para modelos que possuem esse método
 Object.values(models).forEach((model) => {
@@ -15,4 +16,4 @@ Object.values(models).forEach((model) => {
 });
 
 // 📌 Agora exportamos os modelos inicializados corretamente
-export { db, User, Product, Cart, CartItem, UserWishlist };
+export { db, User, Product, Cart, CartItem, UserWishlist, Order, OrderItem };
