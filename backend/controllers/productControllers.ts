@@ -106,3 +106,35 @@ exports.deleteProduct = async (req, res) => {
     res.status(500).json({ error: (error as Error).message });
   }
 };
+
+exports.sellProduct = async (productId, quantity) => {
+  try {
+    if (!quantity || quantity <= 0) {
+      throw new Error('Quantidade inválida');
+    }
+
+    const product = await Product.findByPk(productId); // ✅ Certificando-se de buscar pelo `productId`
+
+    if (!product) {
+      throw new Error('Produto não encontrado');
+    }
+
+    if (product.quantity < quantity) {
+      throw new Error('Estoque insuficiente');
+    }
+
+    // ✅ Atualizando o estoque corretamente
+    product.quantity -= quantity;
+    await product.save();
+
+    return { success: true, message: 'Produto vendido com sucesso!', product };
+  } catch (error) {
+    console.error('Erro ao vender produto:', error);
+    return { success: false, error: (error as Error).message };
+  }
+};
+
+
+function async(req: any, res: any) {
+  throw new Error('Function not implemented.');
+}

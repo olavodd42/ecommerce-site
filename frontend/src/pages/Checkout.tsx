@@ -6,14 +6,14 @@ const Checkout = () => {
   const [name, setName] = useState('');
   const [paymentMethod, setPaymentMethod] = useState('credit_card');
   const [parcel, setParcel] = useState('1'); // Parcelas
-  const [cart, setCart] = useState(null);
+  const [cart, setCart] = useState<{id: string; userId: String, items: { id: string, product: { id: number; name: string; price: number }; quantity: number }[] } | null>(null);
   const location = useLocation();
   const navigate = useNavigate();
 
   // Verifica origem da compra
   const fromCart = location.state?.fromCart || false;
   const fromProduct = location.state?.fromProduct || false;
-  const productId = location.state?.productId || null;
+  const productId = location.state?.productID || null;
   const quantity = location.state?.quantity || 1;
   const token = localStorage.getItem('authToken');
 
@@ -27,8 +27,6 @@ const Checkout = () => {
   }, [navigate, token]);
 
   useEffect(() => {
-    console.log("Origem do usuário:", { fromCart, fromProduct, productId, quantity });
-
     const fetchData = async () => {
       try {
         const user = localStorage.getItem('user');
@@ -39,19 +37,17 @@ const Checkout = () => {
         const user_id = JSON.parse(user).id;
 
         if (fromCart) {
-          // Obtém os itens do carrinho
           const response = await axios.get('http://localhost:4000/api/cart', {
             headers: {
               Authorization: `Bearer ${token}`,
               'user': user_id
             },
           });
-
+          
           setCart(response.data);
           const total = response.data.items.reduce((sum, item) => sum + item.product.price * item.quantity, 0);
           setTotalAmount(total);
         } else if (fromProduct && productId) {
-          // Obtém os detalhes do produto para compra direta
           const response = await axios.get(`http://localhost:4000/api/products/${productId}`, {
             headers: { Authorization: `Bearer ${token}` },
           });
@@ -65,27 +61,31 @@ const Checkout = () => {
     };
 
     fetchData();
-  }, []);
+  }, [fromCart, fromProduct, productId, quantity, token]);
 
-  // Calcula valor parcelado
   const installmentValue = paymentMethod === 'credit_card' ? (totalAmount / Number(parcel)).toFixed(2) : null;
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     try {
       let response;
-      if (fromCart) {
-        response = await axios.post('http://localhost:4000/api/checkout/from-cart', {}, {
+      let orderData = {};
+
+      if (fromCart && cart?.items) {
+        orderData = {
+          products: cart.items.map(item => ({
+            productId: item.product.id,
+            quantity: item.quantity
+          }))
+        };
+        response = await axios.post('http://localhost:4000/api/checkout/from-cart', orderData, {
           headers: { Authorization: `Bearer ${token}` },
         });
       } else if (fromProduct && productId) {
-        response = await axios.post('http://localhost:4000/api/checkout/direct', {
-          productId,
-          quantity,
-        }, {
+        orderData = { productId, quantity };
+        response = await axios.post('http://localhost:4000/api/checkout/direct', orderData, {
           headers: { Authorization: `Bearer ${token}` },
         });
-        
       } else {
         throw new Error('Erro ao finalizar compra');
       }
@@ -104,7 +104,6 @@ const Checkout = () => {
       <div className="mx-auto max-w-screen-md px-4">
         <h2 className="text-xl font-semibold text-gray-900 sm:text-2xl">Finalizar Compra</h2>
 
-        {/* Exibir detalhes do produto ou carrinho */}
         <div className="mt-4 p-4 bg-gray-100 rounded-lg">
           <h3 className="text-lg font-semibold text-gray-800">Resumo da Compra</h3>
           {fromCart ? (
@@ -119,18 +118,18 @@ const Checkout = () => {
               ))}
             </ul>
           ) : (
-            <p className="text-gray-700">
-              {productDetails?.name} ({quantity}x) -{" "}
-              {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(totalAmount)}
-            </p>
+            productDetails && (
+              <p className="text-gray-700">
+                {productDetails.name} ({quantity}x) - {" "}
+                {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(totalAmount)}
+              </p>
+            )
           )}
 
-          {/* Total */}
           <div className="mt-2 text-lg font-bold text-gray-900">
             Total: {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(totalAmount)}
           </div>
 
-          {/* Parcelamento */}
           {paymentMethod === 'credit_card' && (
             <div className="mt-2 text-gray-700">
               {parcel}x de {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(Number(installmentValue))}
@@ -138,7 +137,6 @@ const Checkout = () => {
           )}
         </div>
 
-        {/* Formulário de pagamento */}
         <form onSubmit={handleSubmit} className="mt-6 space-y-4">
           <div>
             <label className="block text-sm font-medium text-gray-700">Nome Completo</label>
