@@ -2,11 +2,38 @@ import React from "react";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Navigation } from "swiper/modules";
 import { Pagination } from "swiper/modules";
+import { useNavigate } from "react-router-dom";
 import "swiper/css";
 import "swiper/css/navigation";
 import "swiper/css/pagination";
 
+
+
 const ProductCarousel = ({products = []}) => {
+  const navigate = useNavigate();
+  const addToCart = async (productId, quantity) => {
+    try {
+      
+      const token = localStorage.getItem('authToken');
+      const response = await fetch('http://localhost:4000/api/cart/items', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          productId: productId,
+          quantity: quantity
+        })
+      });
+  
+      if (!response.ok) throw new Error('Erro ao adicionar ao carrinho');
+      
+      alert('Produto adicionado ao carrinho!');
+    } catch (error) {
+      alert(error.message);
+    }
+  };
 
 
   return (
@@ -36,8 +63,12 @@ const ProductCarousel = ({products = []}) => {
               <div className="p-4">
                 <h3 className="text-lg font-semibold">{product.name}</h3>
                 <p className="text-gray-500">{product.price}</p>
-                <button className="mt-4 w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700">
+                <button className="mt-4 w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700" onClick={()=> addToCart(product.id, 1)}>
                   Adicionar ao Carrinho
+                </button>
+
+                <button className="mt-4 w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700" onClick={()=> navigate(`/products/${product.id}`)}>
+                  Ver produto
                 </button>
               </div>
             </div>

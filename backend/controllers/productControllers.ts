@@ -1,5 +1,6 @@
 import multerConfig from '../config/multer'; // Importar o multer configurado
 import Product from '../models/productModel';
+import { Op } from 'sequelize';
 
 exports.createProduct = async (req, res) => {
   try {
@@ -32,15 +33,21 @@ exports.createProduct = async (req, res) => {
 exports.getProduct = async (req, res) => {
   try {
     const product = await Product.findByPk(req.params.id);
-    //console.log(req);
+    
     if (!product) {
       return res.status(404).json({ error: "Produto não encontrado." });
     }
+
+    // Converte specs se for string JSON
+    if (typeof product.specs === 'string') {
+      product.specs = JSON.parse(product.specs);
+    }
+
     res.status(200).json(product);
   } catch (error) {
     res.status(500).json({ error: (error as Error).message });
   }
-}
+};
 
 exports.getFeaturedProducts = async (req, res) => {
   try {
@@ -133,6 +140,27 @@ exports.sellProduct = async (productId, quantity) => {
     return { success: false, error: (error as Error).message };
   }
 };
+
+exports.searchProduct = async (req, res) => {
+  try {
+    const { query, category } = req.query
+    const whereClause: any = {}
+
+    if (query) {
+      whereClause.name = { [Op.iLike]: `%${query}%` }
+    }
+
+    if (category) {
+      whereClause.category = category
+    }
+
+    const products: Array<Product> = await Product.findAll({ where: whereClause })
+
+    res.status(200).json(products)
+  } catch (error) {
+    res.status(500).json({ error: (error as Error).message })
+  }
+}
 
 
 function async(req: any, res: any) {

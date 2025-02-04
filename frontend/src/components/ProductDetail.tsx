@@ -201,14 +201,14 @@ const ProductDetail = () => {
                                 <h2 className="text-xl font-semibold text-gray-800 mb-4">Especificações Técnicas</h2>
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                     {product.specs && typeof product.specs === 'object' ? (
-                                        Object.entries(product.specs).map(([key, value]) => (
-                                            <div key={key} className="bg-white p-4 rounded-lg shadow-sm">
-                                                <dt className="text-sm font-medium text-gray-500">{key}</dt>
-                                                <dd className="mt-1 text-lg text-gray-900">{value}</dd>
-                                            </div>
-                                        ))
+                                    Object.entries(product.specs).map(([key, value]) => (
+                                        <div key={key} className="bg-white p-4 rounded-lg shadow-sm">
+                                        <dt className="text-sm font-medium text-gray-500">{key}</dt>
+                                        <dd className="mt-1 text-lg text-gray-900">{String(value)}</dd>
+                                        </div>
+                                    ))
                                     ) : (
-                                        <p className="text-gray-500">Nenhuma especificação disponível</p>
+                                    <p className="text-gray-500">Nenhuma especificação disponível</p>
                                     )}
                                 </div>
                             </div>
