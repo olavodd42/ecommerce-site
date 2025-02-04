@@ -1,0 +1,14 @@
+middleware/
+    protectRoutes.ts
+models/
+    cartModel.ts
+    config/
+    
+    migrations/
+    models/
+    orderModel.ts
+    ...
+
+routes/
+    ...
+tsconfig.json
