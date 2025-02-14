@@ -12,7 +12,7 @@ class UserWishlist extends Model {
 
   static associate(models: any) {
     UserWishlist.belongsTo(models.User, { foreignKey: 'userId' });
-    UserWishlist.belongsTo(models.Product, { foreignKey: 'productId' });
+    UserWishlist.belongsTo(models.Product, { foreignKey: 'productId', as: 'product' });
   }
 }
 

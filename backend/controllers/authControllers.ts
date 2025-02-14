@@ -242,9 +242,9 @@ exports.wishlist = async (req, res) => {
     }
 
     const wishlist = await UserWishlist.findAll({
-      where: { userId },
-      include: [{ model: Product, as: "product" }],
-    });
+      where: { userId: userId },
+      include: [{ model: Product, as: 'product' }]
+    });    
 
     console.log("Wishlist encontrada:", wishlist);
 

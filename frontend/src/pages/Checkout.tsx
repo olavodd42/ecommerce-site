@@ -6,7 +6,7 @@ const Checkout = () => {
   const [name, setName] = useState('');
   const [paymentMethod, setPaymentMethod] = useState('credit_card');
   const [parcel, setParcel] = useState('1'); // Parcelas
-  const [cart, setCart] = useState<{id: string; userId: String, items: { id: string, product: { id: number; name: string; price: number }; quantity: number }[] } | null>(null);
+  const [cart, setCart] = useState<{id: string; userId: string; items: { id: string, product: { id: number; name: string; price: number }; quantity: number }[] } | null>(null);
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -100,14 +100,16 @@ const Checkout = () => {
   };
 
   return (
-    <section className="bg-white py-8 antialiased md:py-16">
+    <section className="bg-gray-50 py-12 antialiased md:py-16">
       <div className="mx-auto max-w-screen-md px-4">
-        <h2 className="text-xl font-semibold text-gray-900 sm:text-2xl">Finalizar Compra</h2>
+        <h2 className="text-2xl font-semibold text-gray-900 sm:text-3xl mb-6">
+          Finalizar Compra
+        </h2>
 
-        <div className="mt-4 p-4 bg-gray-100 rounded-lg">
-          <h3 className="text-lg font-semibold text-gray-800">Resumo da Compra</h3>
+        <div className="mb-8 p-6 bg-white rounded-lg shadow-sm border border-gray-200">
+          <h3 className="text-xl font-semibold text-gray-800 mb-4">Resumo da Compra</h3>
           {fromCart ? (
-            <ul>
+            <ul className="space-y-2">
               {cart?.items?.map((item) => (
                 <li key={item.id} className="flex justify-between text-gray-700">
                   <span>{item.product.name} ({item.quantity}x)</span>
@@ -120,13 +122,13 @@ const Checkout = () => {
           ) : (
             productDetails && (
               <p className="text-gray-700">
-                {productDetails.name} ({quantity}x) - {" "}
+                {productDetails.name} ({quantity}x) -{" "}
                 {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(totalAmount)}
               </p>
             )
           )}
 
-          <div className="mt-2 text-lg font-bold text-gray-900">
+          <div className="mt-4 text-xl font-bold text-gray-900">
             Total: {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(totalAmount)}
           </div>
 
@@ -137,15 +139,25 @@ const Checkout = () => {
           )}
         </div>
 
-        <form onSubmit={handleSubmit} className="mt-6 space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-6">
           <div>
-            <label className="block text-sm font-medium text-gray-700">Nome Completo</label>
-            <input type="text" value={name} onChange={(e) => setName(e.target.value)} required className="w-full p-2 border border-gray-300 rounded-lg" />
+            <label className="block text-sm font-medium text-gray-700 mb-1">Nome Completo</label>
+            <input 
+              type="text" 
+              value={name} 
+              onChange={(e) => setName(e.target.value)} 
+              required 
+              className="w-full border border-gray-200 rounded-md p-3 focus:outline-none focus:ring focus:ring-gray-200" 
+            />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700">Método de Pagamento</label>
-            <select value={paymentMethod} onChange={(e) => setPaymentMethod(e.target.value)} className="w-full p-2 border border-gray-300 rounded-lg">
+            <label className="block text-sm font-medium text-gray-700 mb-1">Método de Pagamento</label>
+            <select 
+              value={paymentMethod} 
+              onChange={(e) => setPaymentMethod(e.target.value)} 
+              className="w-full border border-gray-200 rounded-md p-3 focus:outline-none focus:ring focus:ring-gray-200"
+            >
               <option value="credit_card">Cartão de Crédito</option>
               <option value="pix">PIX</option>
               <option value="boleto">Boleto Bancário</option>
@@ -154,8 +166,13 @@ const Checkout = () => {
 
           {paymentMethod === 'credit_card' && (
             <div>
-              <label className="block text-sm font-medium text-gray-700">Número de Parcelas</label>
-              <select value={parcel} onChange={(e) => setParcel(e.target.value)} required className="w-full p-2 border border-gray-300 rounded-lg">
+              <label className="block text-sm font-medium text-gray-700 mb-1">Número de Parcelas</label>
+              <select 
+                value={parcel} 
+                onChange={(e) => setParcel(e.target.value)} 
+                required 
+                className="w-full border border-gray-200 rounded-md p-3 focus:outline-none focus:ring focus:ring-gray-200"
+              >
                 {[...Array(12).keys()].map((num) => (
                   <option key={num + 1} value={num + 1}>
                     {num + 1}x {num + 1 <= 10 ? "sem juros" : "com juros"}
@@ -165,7 +182,10 @@ const Checkout = () => {
             </div>
           )}
 
-          <button type="submit" className="w-full bg-green-600 text-white p-3 rounded-lg hover:bg-green-700 mt-4">
+          <button 
+            type="submit" 
+            className="w-full bg-gray-900 text-white py-3 px-6 rounded-md transition hover:bg-gray-800"
+          >
             Confirmar Compra
           </button>
         </form>

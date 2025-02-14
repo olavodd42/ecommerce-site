@@ -1,80 +1,49 @@
 import React, { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
-import { MenuIcon, XIcon, SearchIcon, ShoppingCartIcon, UserIcon } from "@heroicons/react/outline";
-import Image from "./img.png";
-import { useAuth } from "../context/authProvider.tsx";
+import { Link } from "react-router-dom";
+import {
+  MenuIcon,
+  XIcon,
+  ShoppingCartIcon,
+  UserIcon,
+  SearchIcon,
+} from "@heroicons/react/outline";
+import logo from "./img.png";
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [showCategories, setShowCategories] = useState(false);
-  const { isAuthenticated, logout } = useAuth();
-  const navigate = useNavigate();
-
-  const toggleCategories = () => setShowCategories(!showCategories);
-  const handleLogout = () => {
-    logout();
-    navigate("/login");
-  };
 
   return (
-    <nav className="bg-gradient-to-r from-blue-500 via-blue-600 to-blue-700 text-white shadow-md fixed w-full z-50 h-16 flex items-center">
-      <div className="max-w-screen-xl mx-auto px-6 flex items-center justify-between w-full">
+    <header className="fixed top-0 w-full bg-white bg-opacity-90 backdrop-blur-sm text-gray-900 py-4 z-50 shadow-sm border-b">
+      <div className="max-w-screen-xl mx-auto flex justify-between items-center px-6">
         {/* Logo */}
-        <Link to="/" className="flex items-center space-x-3">
-          <img src={Image} alt="EloShop Logo" className="w-12 h-12 object-contain" />
-          <span className="text-2xl font-bold tracking-wide">EloShop</span>
+        <Link to="/" className="flex items-center space-x-2">
+          <img src={logo} alt="Logo" className="w-8 h-8" />
+          <span className="text-lg font-medium tracking-tight">EloShop</span>
         </Link>
 
-        {/* Menu de Categorias */}
-        <div className="relative hidden lg:block">
-          <button
-            onClick={toggleCategories}
-            className="flex items-center text-sm font-medium hover:text-gray-300 transition"
-          >
-            Categorias <MenuIcon className="w-5 h-5 ml-2" />
-          </button>
-          {showCategories && (
-            <div className="absolute top-full left-0 mt-2 bg-white text-gray-800 rounded-lg shadow-lg w-48 p-2">
-              <ul className="flex flex-col space-y-2">
-                <li><Link to="/electronics" className="block px-4 py-2 hover:bg-gray-100 rounded">Eletrônicos</Link></li>
-                <li><Link to="/clothing" className="block px-4 py-2 hover:bg-gray-100 rounded">Roupas</Link></li>
-                <li><Link to="/home-appliances" className="block px-4 py-2 hover:bg-gray-100 rounded">Eletrodomésticos</Link></li>
-                <li><Link to="/sports" className="block px-4 py-2 hover:bg-gray-100 rounded">Esportes</Link></li>
-              </ul>
-            </div>
-          )}
-        </div>
-
-        {/* Navegação Principal */}
-        <ul className="hidden lg:flex space-x-6 text-sm font-medium">
-          <li><Link to="/" className="hover:text-gray-300 transition">Home</Link></li>
-          <li><Link to="/cart" className="hover:text-gray-300 transition">Carrinho</Link></li>
-          <li><Link to="/bestsellers" className="hover:text-gray-300 transition">Mais Vendidos</Link></li>
-        </ul>
-
-        {/* Ações */}
-        <div className="flex items-center space-x-5">
-          <Link to="/search" className="hover:text-gray-300">
+        {/* Navegação */}
+        <nav className="hidden md:flex space-x-8 text-sm">
+          <Link to="/" className="hover:text-gray-600 transition duration-150 ease-in-out">Home</Link>
+          <Link to="/bestsellers" className="hover:text-gray-600 transition duration-150 ease-in-out">Mais Vendidos</Link>
+          <Link to="/categories" className="hover:text-gray-600 transition duration-150 ease-in-out">Categorias</Link>
+          <Link to="/search" className="hover:text-gray-600 transition duration-150 ease-in-out flex items-center gap-1">
             <SearchIcon className="w-5 h-5" />
+            <span>Pesquisa</span>
           </Link>
-          <Link to="/cart" className="hover:text-gray-300 relative">
-            <ShoppingCartIcon className="w-5 h-5" />
-          </Link>
-          {isAuthenticated ? (
-            <div className="flex items-center space-x-3">
-              <Link to="/user" className="hover:text-gray-300 flex items-center">
-                <UserIcon className="w-5 h-5" />
-              </Link>
-              <button onClick={handleLogout} className="text-sm font-medium hover:text-gray-300">
-                Sair
-              </button>
-            </div>
-          ) : (
-            <Link to="/login" className="hover:text-gray-300">Entrar</Link>
-          )}
+        </nav>
 
-          {/* Menu Mobile */}
-          <button onClick={() => setIsMenuOpen(!isMenuOpen)} className="lg:hidden focus:outline-none">
+        {/* Ícones */}
+        <div className="flex items-center space-x-4">
+          <Link to="/search" className="hidden md:flex hover:text-gray-600 transition duration-150 ease-in-out">
+            <SearchIcon className="w-6 h-6" />
+          </Link>
+          <Link to="/cart" className="hover:text-gray-600 transition duration-150 ease-in-out">
+            <ShoppingCartIcon className="w-6 h-6" />
+          </Link>
+          <Link to="/user" className="hover:text-gray-600 transition duration-150 ease-in-out">
+            <UserIcon className="w-6 h-6" />
+          </Link>
+          <button onClick={() => setIsMenuOpen(!isMenuOpen)} className="md:hidden focus:outline-none">
             {isMenuOpen ? <XIcon className="w-6 h-6" /> : <MenuIcon className="w-6 h-6" />}
           </button>
         </div>
@@ -82,16 +51,17 @@ const Header = () => {
 
       {/* Menu Mobile */}
       {isMenuOpen && (
-        <div className="lg:hidden bg-white text-gray-800 shadow-lg absolute top-16 w-full left-0 p-4">
-          <ul className="flex flex-col space-y-3 text-sm font-medium">
-            <li><Link to="/" className="block px-4 py-2 hover:bg-gray-100 rounded">Home</Link></li>
-            <li><Link to="/cart" className="block px-4 py-2 hover:bg-gray-100 rounded">Carrinho</Link></li>
-            <li><Link to="/bestsellers" className="block px-4 py-2 hover:bg-gray-100 rounded">Mais Vendidos</Link></li>
-            <li><Link to="/login" className="block px-4 py-2 hover:bg-gray-100 rounded">Login</Link></li>
-          </ul>
+        <div className="md:hidden absolute top-16 left-0 w-full bg-white bg-opacity-95 backdrop-blur-sm border-t py-4 flex flex-col items-center space-y-4">
+          <Link to="/" onClick={() => setIsMenuOpen(false)} className="text-gray-900 text-lg">Home</Link>
+          <Link to="/bestsellers" onClick={() => setIsMenuOpen(false)} className="text-gray-900 text-lg">Mais Vendidos</Link>
+          <Link to="/categories" onClick={() => setIsMenuOpen(false)} className="text-gray-900 text-lg">Categorias</Link>
+          <Link to="/search" onClick={() => setIsMenuOpen(false)} className="text-gray-900 text-lg flex items-center gap-1">
+            <SearchIcon className="w-5 h-5" />
+            Pesquisa
+          </Link>
         </div>
       )}
-    </nav>
+    </header>
   );
 };
 
